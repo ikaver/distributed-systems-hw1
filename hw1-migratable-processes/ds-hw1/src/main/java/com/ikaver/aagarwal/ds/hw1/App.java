@@ -1,13 +1,17 @@
 package com.ikaver.aagarwal.ds.hw1;
 
-/**
- * Hello world!
- *
- */
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+
 public class App 
 {
-    public static void main( String[] args )
-    {
-        System.out.println( "Hello World!" );
-    }
+  
+  public static void main( String[] args )
+  {
+    Injector injector = Guice.createInjector(new TestUserInputModule());        
+    NodeManagerController controller 
+      = injector.getInstance(NodeManagerController.class);
+    controller.readInput();
+  }
+
 }
