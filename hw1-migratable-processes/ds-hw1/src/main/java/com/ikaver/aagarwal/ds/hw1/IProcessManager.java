@@ -1,6 +1,6 @@
 package com.ikaver.aagarwal.ds.hw1;
 
-public interface ProcessManager {
+public interface IProcessManager {
   /*
    * @description Returns the current state of the node, indicating which 
    * processes are currently running.
