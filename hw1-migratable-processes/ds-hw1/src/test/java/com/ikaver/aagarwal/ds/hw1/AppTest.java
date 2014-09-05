@@ -1,4 +1,4 @@
-package com.ikaver.aagarwal.migratable.process.hw1;
+package com.ikaver.aagarwal.ds.hw1;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
