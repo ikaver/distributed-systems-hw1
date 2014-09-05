@@ -4,13 +4,14 @@ import java.io.Serializable;
 import java.util.List;
 
 public class NodeState implements Serializable {
-  
+
+  private static final long serialVersionUID = -3222854152850012659L;
   private String nodeId;
   private List<Integer> runningProcesses;
-  
+
   public NodeState(String nodeId, List<Integer> runningProcesses) {
     if(runningProcesses == null) {
-      throw new NullPointerException("List of running processes can' be null");
+      throw new NullPointerException("List of running processes can't be null");
     }
     this.nodeId = nodeId;
     this.runningProcesses = runningProcesses;
