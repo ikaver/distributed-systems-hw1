@@ -1,5 +1,5 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.ikaver.aagarwal.</groupId>
@@ -11,9 +11,56 @@
   <url>http://maven.apache.org</url>
 
   <properties>
-    <exec.mainClass>com.ikaver.aagarwal.ds.hw1.App</exec.mainClass>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <isServer>1</isServer>
   </properties>
+  
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>exec-maven-plugin</artifactId>
+          <version>1.2.1</version>
+          <configuration>
+            <executable>java</executable>
+            <arguments>
+              <argument>-Djava.library.path=${project.build.directory}/lib</argument>
+              <argument>-classpath</argument>
+              <classpath />
+              <argument>com.ikaver.aagarwal.ds.hw1.App</argument>
+              <argument>${isServer}</argument>
+            </arguments>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>rmic-maven-plugin</artifactId>
+          <version>1.1</version>
+          <executions>
+            <execution>
+              <id>rmic-process-classes</id>
+              <goals>
+                <goal>rmic</goal>
+              </goals>
+              <configuration>
+                <sources>
+                  <source>
+                    <includes>
+                      <include>**/Hello.class</include>
+                    </includes>
+                    <excludes>
+                    </excludes>
+                    <iiop>true</iiop>
+                  </source>
+                </sources>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
 
   <dependencies>
     <dependency>
@@ -23,9 +70,14 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-	<groupId>com.google.inject</groupId>
-	<artifactId>guice</artifactId>
-	<version>3.0</version>
+      <groupId>com.google.inject</groupId>
+      <artifactId>guice</artifactId>
+      <version>3.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.mojo</groupId>
+      <artifactId>rmic-maven-plugin</artifactId>
+      <version>1.1</version>
     </dependency>
   </dependencies>
 </project>
