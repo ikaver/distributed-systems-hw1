@@ -7,7 +7,7 @@ import java.util.Scanner;
 import com.google.inject.Inject;
 import com.ikaver.aagarwal.ds.hw1.helpers.ArrayAdditions;
 
-/*
+/**
  * Parses commands from the client line by line and makes the appropriate API
  * call for each command given.
  */
@@ -26,7 +26,7 @@ public class NodeManagerController {
     this.manager = manager;
   }
   
-  /*
+  /**
    * Reads the input from the input stream line by line, making the 
    * appropriate API calls for each command given.
    */
