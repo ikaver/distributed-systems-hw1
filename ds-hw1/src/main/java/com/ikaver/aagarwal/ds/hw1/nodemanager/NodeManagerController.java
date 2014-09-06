@@ -174,6 +174,9 @@ public class NodeManagerController {
     }
   }
   
+  /*
+   * Prints the node state for all of the current nodes
+   */
   private void printNodeInfoCommand(String [] args) {
     try{
       for(NodeState node : this.manager.getNodeInformation()) {
