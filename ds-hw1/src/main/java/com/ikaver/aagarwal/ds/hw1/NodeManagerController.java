@@ -16,6 +16,7 @@ public class NodeManagerController {
   private static final String MIGRATE_COMMAND = "m";
   private static final String KILL_COMMAND = "k";
   private static final String LAUNCH_COMMAND = "l";
+  private static final String NODE_INFO_COMMAND = "info";
   
   private Scanner scanner;
   private INodeManager manager;
@@ -54,6 +55,9 @@ public class NodeManagerController {
     }
     else if(commandId.equals(LAUNCH_COMMAND)) {
       this.launchCommand(tokens);
+    }
+    else if(commandId.equals(NODE_INFO_COMMAND)) {
+      this.printNodeInfoCommand(tokens);
     }
     else {
       this.printHelp();
@@ -128,6 +132,13 @@ public class NodeManagerController {
     }
     else {
       System.out.printf("Couldn't launch process %s\n", className);
+    }
+  }
+  
+  private void printNodeInfoCommand(String [] args) {
+    for(NodeState node : this.manager.getNodeInformation()) {
+      System.out.printf("Node %s : %s\n", node.getNodeId(),
+          node.getRunningProcesses());
     }
   }
   
