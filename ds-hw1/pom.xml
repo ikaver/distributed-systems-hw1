@@ -1,87 +1,92 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.ikaver.aagarwal.</groupId>
-  <artifactId>ds-hw1</artifactId>
-  <version>1.0-SNAPSHOT</version>
-  <packaging>jar</packaging>
+	<groupId>com.ikaver.aagarwal.</groupId>
+	<artifactId>ds-hw1</artifactId>
+	<version>1.0-SNAPSHOT</version>
+	<packaging>jar</packaging>
 
-  <name>ds-hw1</name>
-  <url>http://maven.apache.org</url>
+	<name>ds-hw1</name>
+	<url>http://maven.apache.org</url>
 
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <!-- Add default program parameters here -->
-    <!--<isServer>1</isServer> -->
-  </properties>
-  
-  <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>exec-maven-plugin</artifactId>
-          <version>1.2.1</version>
-          <configuration>
-            <executable>java</executable>
-            <arguments>
-              <argument>-Djava.library.path=${project.build.directory}/lib</argument>
-              <argument>-classpath</argument>
-              <classpath />
-              <!-- Add main class here -->
-              <argument>com.ikaver.aagarwal.ds.hw1.main.App</argument>
-              <!-- Add custom program parameters here (declared in properties)-->
-              <!--<argument>${isServer}</argument> -->
-            </arguments>
-          </configuration>
-        </plugin>
-        <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>rmic-maven-plugin</artifactId>
-          <version>1.1</version>
-          <executions>
-            <execution>
-              <id>rmic-process-classes</id>
-              <goals>
-                <goal>rmic</goal>
-              </goals>
-              <configuration>
-                <sources>
-                  <source>
-                    <includes>
-                      <!-- Add RMI classes here -->
-                      <!-- <include>**/Hello.class</include> -->
-                    </includes>
-                    <excludes>
-                    </excludes>
-                    <iiop>true</iiop>
-                  </source>
-                </sources>
-              </configuration>
-            </execution>
-          </executions>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-  </build>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<!-- Add default program parameters here -->
+		<!--<isServer>1</isServer> -->
+	</properties>
 
-  <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.google.inject</groupId>
-      <artifactId>guice</artifactId>
-      <version>3.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.codehaus.mojo</groupId>
-      <artifactId>rmic-maven-plugin</artifactId>
-      <version>1.1</version>
-    </dependency>
-  </dependencies>
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>exec-maven-plugin</artifactId>
+					<version>1.2.1</version>
+					<configuration>
+						<executable>java</executable>
+						<arguments>
+							<argument>-Djava.library.path=${project.build.directory}/lib</argument>
+							<argument>-classpath</argument>
+							<classpath />
+							<!-- Add main class here -->
+							<argument>com.ikaver.aagarwal.ds.hw1.main.App</argument>
+							<!-- Add custom program parameters here (declared in properties) -->
+							<!--<argument>${isServer}</argument> -->
+						</arguments>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>rmic-maven-plugin</artifactId>
+					<version>1.1</version>
+					<executions>
+						<execution>
+							<id>rmic-process-classes</id>
+							<goals>
+								<goal>rmic</goal>
+							</goals>
+							<configuration>
+								<sources>
+									<source>
+										<includes>
+											<!-- Add RMI classes here -->
+											<!-- <include>**/Hello.class</include> -->
+										</includes>
+										<excludes>
+										</excludes>
+										<iiop>true</iiop>
+									</source>
+								</sources>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>3.8.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.google.inject</groupId>
+			<artifactId>guice</artifactId>
+			<version>3.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.mojo</groupId>
+			<artifactId>rmic-maven-plugin</artifactId>
+			<version>1.1</version>
+		</dependency>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.17</version>
+		</dependency>
+	</dependencies>
 </project>
