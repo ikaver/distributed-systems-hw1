@@ -1,13 +1,11 @@
-package com.ikaver.aagarwal.ds.hw1.nodemanager;
+package com.ikaver.aagarwal.ds.hw1;
 
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Scanner;
 
 import com.google.inject.Inject;
-import com.ikaver.aagarwal.ds.hw1.NodeState;
 import com.ikaver.aagarwal.ds.hw1.helpers.ArrayAdditions;
-import com.ikaver.aagarwal.ds.hw1.shared.INodeManager;
 
 /**
  * Parses commands from the client line by line and makes the appropriate API
@@ -82,7 +80,12 @@ public class NodeManagerController {
       String srcNode = args[2];
       String destNode = args[3];
       if(this.manager.migrate(pid, srcNode, destNode)) {
-        System.out.printf("Process %d migrated from %s to %s\n", pid, srcNode, destNode);
+        System.out.printf("Process %d migrated from %s to %s\n", 
+            pid, srcNode, destNode);
+      }
+      else {
+        System.out.printf("Couldn't migrate %d from %s to %s\n",
+            pid, srcNode, destNode);
       }
     }
     catch(NumberFormatException e) {
