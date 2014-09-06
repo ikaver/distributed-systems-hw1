@@ -1,15 +1,18 @@
 package com.ikaver.aagarwal.ds.hw1.shared;
 
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+
 import com.ikaver.aagarwal.ds.hw1.NodeState;
 
-public interface IProcessManager {
+public interface IProcessManager extends Remote {
   /**
    * @description Returns the current state of the node, indicating which 
    * processes are currently running.
    * @return The current node state.
    * @see NodeState
    */
-  public NodeState getState();
+  public NodeState getState() throws RemoteException;
   /**
    * Suspends the migratable process with the given pid, and afterwards returns 
    * a serialized version of the suspended process.
@@ -17,7 +20,7 @@ public interface IProcessManager {
    * @return A serialized version of the suspended process with the given pid.
    * @see MigratableProcess
    */
-  public String pack(int pid);
+  public String pack(int pid) throws RemoteException;
   
   /**
    * Deserializes and runs the migratable process with the given pid on the 
@@ -26,7 +29,8 @@ public interface IProcessManager {
    * @param serializedProcess A serialized version of the process that represents
    * its current state.
    */
-  public boolean unpack(int pid, String serializedProcess);
+  public boolean unpack(int pid, String serializedProcess) 
+      throws RemoteException;
   
   /**
    * Terminates the migratable process with the given pid, if its currently 
@@ -34,7 +38,7 @@ public interface IProcessManager {
    * @param pid The process pid
    * @return true iff a process with the given pid was successfully terminated.
    */
-  public boolean remove(int pid);
+  public boolean remove(int pid) throws RemoteException;
   
   /**
    * Launches a migratable process with the given pid, serialized
@@ -45,5 +49,6 @@ public interface IProcessManager {
    * @param args The arguments with which the constructor will be invoked
    * @return true iff the process was launched successfully
    */
-  public boolean launch(int pid, String classDefinition, String [] args);
+  public boolean launch(int pid, String classDefinition, String [] args)
+      throws RemoteException;
 }
