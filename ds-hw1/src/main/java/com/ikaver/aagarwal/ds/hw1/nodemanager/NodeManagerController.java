@@ -107,6 +107,7 @@ public class NodeManagerController {
     }
     catch(NumberFormatException e) {
       logger.error("Number to String failed!", e);
+      System.out.printf("Bad pid: %s\n", args[1]);
     }
   }
   
@@ -140,6 +141,7 @@ public class NodeManagerController {
     }
     catch(NumberFormatException e) {
       logger.error("Number to String failed!", e);
+      System.out.printf("Bad pid: %s\n", args[1]);
     }
 
   }
@@ -163,7 +165,6 @@ public class NodeManagerController {
     }
     catch(RemoteException e) {
       logger.error("Launch failed", e);
-      pid = -1;
     }
     if(pid > 0) {
       System.out.printf("Launched process with pid = %d\n", pid);
