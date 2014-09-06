@@ -2,7 +2,7 @@ package com.ikaver.aagarwal.ds.hw1.processmanager;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 
@@ -17,7 +17,7 @@ import com.ikaver.aagarwal.ds.hw1.shared.ProcessState;
 public class ProcessManagerImpl implements IProcessManager,
 		ProcessNotificationStateHandler {
 
-	private final HashMap<Integer, Thread> pidProcessMap = new HashMap<Integer, Thread>();
+	private final ConcurrentHashMap<Integer, Thread> pidProcessMap = new ConcurrentHashMap<Integer, Thread>();
 
 	private final Logger logger = Logger.getLogger(ProcessManagerImpl.class);
 
@@ -92,9 +92,14 @@ public class ProcessManagerImpl implements IProcessManager,
 
 	public void updateProcessState(int pid, ProcessState state) {
 		if (state == ProcessState.DEAD) {
-			pidProcessMap.remove(pid);
-			System.out.println("Process with pid:" + pid
-					+ "is no longer running.");
+			// pid may have already beeb removed. However, this doesn't quite
+			// bother us.
+			Thread thread = pidProcessMap.remove(pid);
+			if (thread != null) {
+				logger.info(String.format("Process with pid :%d has finished.", pid));
+			} else {
+				logger.info(String.format("Process with pid: %d is already dead., pid"));
+			}
 		}
 	}
 }
