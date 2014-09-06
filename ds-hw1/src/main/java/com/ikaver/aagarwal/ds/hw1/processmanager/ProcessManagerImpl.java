@@ -48,13 +48,12 @@ public class ProcessManagerImpl implements IProcessManager {
 					.forName(classDefinition));
 
 			Constructor<IMigratableProcess> constructor = process.getConstructor(String[].class);
-			IMigratableProcess newMigratableProcess = constructor.newInstance(args);
+			IMigratableProcess newMigratableProcess = constructor.newInstance(new Object[]{args});
 
 			// Running the new process now.
 			Thread thread = new Thread(newMigratableProcess);
 			pidProcessMap.put(pid, thread);
 			thread.start();
-
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		} catch (NoSuchMethodException e) {
