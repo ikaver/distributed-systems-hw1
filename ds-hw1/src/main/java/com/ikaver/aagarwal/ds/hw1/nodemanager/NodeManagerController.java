@@ -1,10 +1,11 @@
-package com.ikaver.aagarwal.ds.hw1;
+package com.ikaver.aagarwal.ds.hw1.nodemanager;
 
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Scanner;
 
 import com.google.inject.Inject;
+import com.ikaver.aagarwal.ds.hw1.shared.INodeManager;
 import com.ikaver.aagarwal.ds.hw1.helpers.ArrayAdditions;
 
 /**
