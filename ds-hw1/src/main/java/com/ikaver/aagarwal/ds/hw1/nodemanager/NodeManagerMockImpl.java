@@ -7,7 +7,7 @@ import java.util.List;
 import com.ikaver.aagarwal.ds.hw1.NodeState;
 import com.ikaver.aagarwal.ds.hw1.shared.INodeManager;
 
-public class NodeManagerMock implements INodeManager {
+public class NodeManagerMockImpl implements INodeManager {
 
   private HashMap<Integer, String> processIdToNode;
   private HashMap<String, List<Integer>> nodeToProcessId;
@@ -16,7 +16,7 @@ public class NodeManagerMock implements INodeManager {
   
   private static final int AMOUNT_OF_NODES = 3;
   
-  public NodeManagerMock() {
+  public NodeManagerMockImpl() {
     this.processIdToNode = new HashMap<Integer, String>();
     this.nodeToProcessId = new HashMap<String, List<Integer>>();
     this.currentNode = 0;
@@ -68,7 +68,7 @@ public class NodeManagerMock implements INodeManager {
   
   private boolean removeProcessFromNode(Integer pid, String node) {
     boolean foundNode = false;
-    if(this.processIdToNode.get(pid).equals(node)) {
+    if(node != null && node.equals(this.processIdToNode.get(pid))) {
       this.processIdToNode.remove(pid);
       this.nodeToProcessId.get(node).remove(pid);
       foundNode = true;

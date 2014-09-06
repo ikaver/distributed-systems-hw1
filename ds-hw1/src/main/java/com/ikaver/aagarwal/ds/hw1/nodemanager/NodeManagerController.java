@@ -1,8 +1,12 @@
 package com.ikaver.aagarwal.ds.hw1.nodemanager;
 
 import java.io.InputStream;
+import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.Scanner;
+
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import com.google.inject.Inject;
 import com.ikaver.aagarwal.ds.hw1.NodeState;
@@ -19,6 +23,9 @@ public class NodeManagerController {
   private static final String KILL_COMMAND = "k";
   private static final String LAUNCH_COMMAND = "l";
   private static final String NODE_INFO_COMMAND = "info";
+  
+  private static final Logger logger 
+    = LogManager.getLogger(NodeManagerController.class.getName());
   
   private Scanner scanner;
   private INodeManager manager;
@@ -72,7 +79,7 @@ public class NodeManagerController {
    * @param args Arguments for the migrate command. 
    *    [ "m", PROCESS_ID, SOURCE_NODE, DESTINATION_NODE]
    */
-  private void migrateCommand(String [] args) {
+  private void migrateCommand(String [] args){
     if(args.length < 4 || ArrayAdditions.contains(args, null)) {
       this.printHelp();
       return;
@@ -81,7 +88,15 @@ public class NodeManagerController {
       int pid = Integer.parseInt(args[1]);
       String srcNode = args[2];
       String destNode = args[3];
-      if(this.manager.migrate(pid, srcNode, destNode)) {
+      boolean success = false;
+      try {
+        success = this.manager.migrate(pid, srcNode, destNode);
+      }
+      catch(RemoteException e) {
+        logger.error("Migrate failed!", e);
+        success = false;
+      }
+      if(success) {
         System.out.printf("Process %d migrated from %s to %s\n", 
             pid, srcNode, destNode);
       }
@@ -91,7 +106,7 @@ public class NodeManagerController {
       }
     }
     catch(NumberFormatException e) {
-      e.printStackTrace();
+      logger.error("Number to String failed!", e);
     }
   }
   
@@ -108,7 +123,15 @@ public class NodeManagerController {
     }
     try {
       int pid = Integer.parseInt(args[1]);
-      if(this.manager.remove(pid)) {
+      boolean success = false;
+      try{
+        success = this.manager.remove(pid);
+      }
+      catch(RemoteException e) {
+        logger.error("Kill process failed", e);
+        success = false;
+      }
+      if(success) {
         System.out.printf("Process %d killed\n", pid);
       }
       else {
@@ -116,8 +139,9 @@ public class NodeManagerController {
       }
     }
     catch(NumberFormatException e) {
-      e.printStackTrace();
+      logger.error("Number to String failed!", e);
     }
+
   }
   
   /*
@@ -131,9 +155,16 @@ public class NodeManagerController {
       this.printHelp();
       return;
     }
+    int pid = -1;
     String className = args[1];
     String [] processArgs = Arrays.copyOfRange(args, 2, args.length);
-    int pid = this.manager.launch(className, processArgs);
+    try {
+      pid = this.manager.launch(className, processArgs);
+    }
+    catch(RemoteException e) {
+      logger.error("Launch failed", e);
+      pid = -1;
+    }
     if(pid > 0) {
       System.out.printf("Launched process with pid = %d\n", pid);
     }
@@ -143,9 +174,14 @@ public class NodeManagerController {
   }
   
   private void printNodeInfoCommand(String [] args) {
-    for(NodeState node : this.manager.getNodeInformation()) {
-      System.out.printf("Node %s : %s\n", node.getNodeId(),
-          node.getRunningProcesses());
+    try{
+      for(NodeState node : this.manager.getNodeInformation()) {
+        System.out.printf("Node %s : %s\n", node.getNodeId(),
+            node.getRunningProcesses());
+      }
+    }
+    catch(RemoteException e){
+      logger.error("Node information failed!", e);
     }
   }
   
