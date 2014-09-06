@@ -13,7 +13,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- Add default program parameters here -->
-    <isServer>1</isServer>
+    <!--<isServer>1</isServer> -->
   </properties>
   
   <build>
@@ -30,9 +30,9 @@
               <argument>-classpath</argument>
               <classpath />
               <!-- Add main class here -->
-              <argument>com.ikaver.aagarwal.ds.hw1.App</argument>
+              <argument>com.ikaver.aagarwal.ds.hw1.main.App</argument>
               <!-- Add custom program parameters here (declared in properties)-->
-              <argument>${isServer}</argument>
+              <!--<argument>${isServer}</argument> -->
             </arguments>
           </configuration>
         </plugin>
@@ -51,7 +51,7 @@
                   <source>
                     <includes>
                       <!-- Add RMI classes here -->
-                      <include>**/Hello.class</include>
+                      <!-- <include>**/Hello.class</include> -->
                     </includes>
                     <excludes>
                     </excludes>
