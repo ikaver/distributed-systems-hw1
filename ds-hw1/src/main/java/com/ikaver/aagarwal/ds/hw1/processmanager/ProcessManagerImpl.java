@@ -2,17 +2,25 @@ package com.ikaver.aagarwal.ds.hw1.processmanager;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.log4j.Logger;
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.ikaver.aagarwal.ds.hw1.NodeState;
 import com.ikaver.aagarwal.ds.hw1.shared.IMigratableProcess;
 import com.ikaver.aagarwal.ds.hw1.shared.IProcessManager;
+import com.ikaver.aagarwal.ds.hw1.shared.ProcessState;
 
-public class ProcessManagerImpl implements IProcessManager {
+@Singleton
+public class ProcessManagerImpl implements IProcessManager,
+		ProcessNotificationStateHandler {
 
-	private final HashMap<Integer, Thread> pidProcessMap =
-			new HashMap<Integer, Thread>();
+	private final ConcurrentHashMap<Integer, Thread> pidProcessMap = new ConcurrentHashMap<Integer, Thread>();
+
+	private final Logger logger = Logger.getLogger(ProcessManagerImpl.class);
+
 	@Inject
 	public ProcessManagerImpl() {
 		// Empty constructor for now.. Will add more stuff if needed.
@@ -47,29 +55,51 @@ public class ProcessManagerImpl implements IProcessManager {
 			Class<IMigratableProcess> process = ((Class<IMigratableProcess>) Class
 					.forName(classDefinition));
 
-			Constructor<IMigratableProcess> constructor = process.getConstructor(String[].class);
-			IMigratableProcess newMigratableProcess = constructor.newInstance(args);
+			Constructor<IMigratableProcess> constructor = process
+					.getConstructor(String[].class);
+			IMigratableProcess newMigratableProcess = constructor
+					.newInstance(new Object[] { args });
 
 			// Running the new process now.
-			Thread thread = new Thread(newMigratableProcess);
+			ProcessThread thread = new ProcessThread(pid, newMigratableProcess,
+					this);
 			pidProcessMap.put(pid, thread);
 			thread.start();
-
 		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
+			logger.warn(String.format("Unable to locate class %s.",
+					classDefinition));
 		} catch (NoSuchMethodException e) {
 			e.printStackTrace();
+			return false;
 		} catch (SecurityException e) {
 			e.printStackTrace();
+			return false;
 		} catch (InstantiationException e) {
 			e.printStackTrace();
+			return false;
 		} catch (IllegalAccessException e) {
 			e.printStackTrace();
+			return false;
 		} catch (IllegalArgumentException e) {
 			e.printStackTrace();
+			return false;
 		} catch (InvocationTargetException e) {
 			e.printStackTrace();
+			return false;
 		}
 		return true;
+	}
+
+	public void updateProcessState(int pid, ProcessState state) {
+		if (state == ProcessState.DEAD) {
+			// pid may have already beeb removed. However, this doesn't quite
+			// bother us.
+			Thread thread = pidProcessMap.remove(pid);
+			if (thread != null) {
+				logger.info(String.format("Process with pid :%d has finished.", pid));
+			} else {
+				logger.info(String.format("Process with pid: %d is already dead., pid"));
+			}
+		}
 	}
 }
