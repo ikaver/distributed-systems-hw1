@@ -5,14 +5,18 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.ikaver.aagarwal.ds.hw1.NodeState;
 import com.ikaver.aagarwal.ds.hw1.shared.IMigratableProcess;
 import com.ikaver.aagarwal.ds.hw1.shared.IProcessManager;
+import com.ikaver.aagarwal.ds.hw1.shared.ProcessState;
 
-public class ProcessManagerImpl implements IProcessManager {
+@Singleton
+public class ProcessManagerImpl implements IProcessManager, ProcessNotificationStateHandler {
 
 	private final HashMap<Integer, Thread> pidProcessMap =
 			new HashMap<Integer, Thread>();
+
 	@Inject
 	public ProcessManagerImpl() {
 		// Empty constructor for now.. Will add more stuff if needed.
@@ -51,7 +55,7 @@ public class ProcessManagerImpl implements IProcessManager {
 			IMigratableProcess newMigratableProcess = constructor.newInstance(new Object[]{args});
 
 			// Running the new process now.
-			Thread thread = new Thread(newMigratableProcess);
+			ProcessThread thread = new ProcessThread(pid, newMigratableProcess, this);
 			pidProcessMap.put(pid, thread);
 			thread.start();
 		} catch (ClassNotFoundException e) {
@@ -70,5 +74,12 @@ public class ProcessManagerImpl implements IProcessManager {
 			e.printStackTrace();
 		}
 		return true;
+	}
+
+	public void updateProcessState(int pid, ProcessState state) {
+		if (state == ProcessState.DEAD) {
+			pidProcessMap.remove(pid);
+			System.out.println("Process with pid:" + pid + "is no longer running.");
+		}
 	}
 }
