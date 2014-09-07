@@ -13,9 +13,8 @@ class ProcessThread extends Thread {
 	private final IMigratableProcess process;
 	private final Integer pid;
 	private final ProcessNotificationStateHandler processNotificationStateHandler;
-	
-	public ProcessThread(Integer pid,
-			IMigratableProcess process,
+
+	public ProcessThread(Integer pid, IMigratableProcess process,
 			ProcessNotificationStateHandler processNotificationStateHandler) {
 		this.process = process;
 		this.pid = pid;
@@ -26,10 +25,11 @@ class ProcessThread extends Thread {
 	public void run() {
 		process.run();
 		try {
-      processNotificationStateHandler.updateProcessState(pid, ProcessState.DEAD);
-    } catch (RemoteException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
+			processNotificationStateHandler.updateProcessState(pid,
+					ProcessState.DEAD);
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

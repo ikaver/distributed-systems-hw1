@@ -19,10 +19,10 @@ import com.ikaver.aagarwal.ds.hw1.shared.ProcessState;
 public class ProcessManagerImpl extends UnicastRemoteObject 
     implements IProcessManager, ProcessNotificationStateHandler {
 
-
   private static final long serialVersionUID = -8398758641188170913L;
 
-  private final ConcurrentHashMap<Integer, Thread> pidProcessMap = new ConcurrentHashMap<Integer, Thread>();
+	private final ConcurrentHashMap<Integer, Thread> pidThreadMap = new ConcurrentHashMap<Integer, Thread>();
+	private final ConcurrentHashMap<Integer, IMigratableProcess> pidProcessMap = new ConcurrentHashMap<Integer, IMigratableProcess>();
 
 	private final Logger logger = Logger.getLogger(ProcessManagerImpl.class);
 
@@ -51,7 +51,20 @@ public class ProcessManagerImpl extends UnicastRemoteObject
 	}
 
 	public boolean remove(int pid) {
-		return false;
+		// Synchronzied on this object since we don't want to fuck up the state of the
+		// data structure containing the process information.
+		synchronized (this) {
+			Thread maybeRunningThread = pidThreadMap.get(pid);
+			if (maybeRunningThread != null && maybeRunningThread.isAlive()) {
+				IMigratableProcess runningProcess = pidProcessMap.get(pid);
+				// Send a suspend signal to the thread so that it can cleanup it's state, if any.
+				runningProcess.suspend();
+				maybeRunningThread.interrupt();
+				return true;
+			} else {
+				return false;
+			}
+		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -68,7 +81,7 @@ public class ProcessManagerImpl extends UnicastRemoteObject
 			// Running the new process now.
 			ProcessThread thread = new ProcessThread(pid, newMigratableProcess,
 					this);
-			pidProcessMap.put(pid, thread);
+			pidThreadMap.put(pid, thread);
 			thread.start();
 		} catch (ClassNotFoundException e) {
 			logger.warn(String.format("Unable to locate class %s.",
@@ -97,13 +110,16 @@ public class ProcessManagerImpl extends UnicastRemoteObject
 
 	public void updateProcessState(int pid, ProcessState state) {
 		if (state == ProcessState.DEAD) {
-			// pid may have already beeb removed. However, this doesn't quite
+			// pid may have already been removed. However, this doesn't quite
 			// bother us.
-			Thread thread = pidProcessMap.remove(pid);
+			Thread thread = pidThreadMap.remove(pid);
+			pidProcessMap.remove(pid);
 			if (thread != null) {
-				logger.info(String.format("Process with pid :%d has finished.", pid));
+				logger.info(String.format("Process with pid :%d has finished.",
+						pid));
 			} else {
-				logger.info(String.format("Process with pid: %d is already dead., pid"));
+				logger.info(String
+						.format("Process with pid: %d is already dead., pid"));
 			}
 		}
 	}
