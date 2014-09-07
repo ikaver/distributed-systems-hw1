@@ -12,7 +12,7 @@ public class ProcessLauncher {
   private int amountOfRetries;
  
   private static final Logger logger 
-  = LogManager.getLogger(NodeManagerImpl.class.getName());
+  = LogManager.getLogger(ProcessLauncher.class.getName());
   
   public ProcessLauncher(int amountOfRetries) {
     this.amountOfRetries = amountOfRetries;
