@@ -59,7 +59,6 @@ public class ProcessManagerImpl extends UnicastRemoteObject
 				IMigratableProcess runningProcess = pidProcessMap.get(pid);
 				// Send a suspend signal to the thread so that it can cleanup it's state, if any.
 				runningProcess.suspend();
-				maybeRunningThread.interrupt();
 				return true;
 			} else {
 				return false;
