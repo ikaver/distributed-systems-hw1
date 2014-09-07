@@ -3,7 +3,6 @@ package com.ikaver.aagarwal.ds.hw1.nodemanager;
 import java.rmi.RemoteException;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 
 import org.apache.log4j.LogManager;
