@@ -2,6 +2,8 @@ package com.ikaver.aagarwal.ds.hw1.processmanager;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
@@ -14,15 +16,18 @@ import com.ikaver.aagarwal.ds.hw1.shared.IProcessManager;
 import com.ikaver.aagarwal.ds.hw1.shared.ProcessState;
 
 @Singleton
-public class ProcessManagerImpl implements IProcessManager,
-		ProcessNotificationStateHandler {
+public class ProcessManagerImpl extends UnicastRemoteObject 
+    implements IProcessManager, ProcessNotificationStateHandler {
 
-	private final ConcurrentHashMap<Integer, Thread> pidProcessMap = new ConcurrentHashMap<Integer, Thread>();
+
+  private static final long serialVersionUID = -8398758641188170913L;
+
+  private final ConcurrentHashMap<Integer, Thread> pidProcessMap = new ConcurrentHashMap<Integer, Thread>();
 
 	private final Logger logger = Logger.getLogger(ProcessManagerImpl.class);
 
 	@Inject
-	public ProcessManagerImpl() {
+	public ProcessManagerImpl() throws RemoteException {
 		// Empty constructor for now.. Will add more stuff if needed.
 	}
 

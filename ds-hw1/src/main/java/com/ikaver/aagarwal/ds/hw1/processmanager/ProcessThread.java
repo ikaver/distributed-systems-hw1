@@ -1,5 +1,7 @@
 package com.ikaver.aagarwal.ds.hw1.processmanager;
 
+import java.rmi.RemoteException;
+
 import com.ikaver.aagarwal.ds.hw1.shared.IMigratableProcess;
 import com.ikaver.aagarwal.ds.hw1.shared.ProcessState;
 
@@ -23,6 +25,11 @@ class ProcessThread extends Thread {
 	@Override
 	public void run() {
 		process.run();
-		processNotificationStateHandler.updateProcessState(pid, ProcessState.DEAD);
+		try {
+      processNotificationStateHandler.updateProcessState(pid, ProcessState.DEAD);
+    } catch (RemoteException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
 	}
 }

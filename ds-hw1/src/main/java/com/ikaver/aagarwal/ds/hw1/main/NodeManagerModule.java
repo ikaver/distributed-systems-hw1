@@ -20,6 +20,7 @@ public class NodeManagerModule extends AbstractModule {
     ReadWriteLock poolLock = new ReentrantReadWriteLock();
     ReadWriteLock stateLock = new ReentrantReadWriteLock();
     ProcessManagerPool pool = new ProcessManagerPool();
+    pool.add("1", "localhost:2000");
     ProcessesState state = new ProcessesState();
     
     bind(ReadWriteLock.class).annotatedWith(Names.named("NMPoolLock"))

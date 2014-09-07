@@ -30,7 +30,7 @@
 							<argument>-classpath</argument>
 							<classpath />
 							<!-- Add main class here -->
-							<argument>com.ikaver.aagarwal.ds.hw1.main.App</argument>
+							<argument>com.ikaver.aagarwal.ds.hw1.processmanager.ProcessManagerEntryPoint</argument>
 							<!-- Add custom program parameters here (declared in properties) -->
 							<!--<argument>${isServer}</argument> -->
 						</arguments>
@@ -51,7 +51,7 @@
 									<source>
 										<includes>
 											<!-- Add RMI classes here -->
-											<!-- <include>**/Hello.class</include> -->
+										  <include>**/ProcessManagerImpl.class</include>
 										</includes>
 										<excludes>
 										</excludes>
