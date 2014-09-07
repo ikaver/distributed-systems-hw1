@@ -7,6 +7,10 @@ public class ProcessManagerPool {
 
   private HashMap<String, String> availableConnections;
   
+  public ProcessManagerPool() {
+    this.availableConnections = new HashMap<String, String>();
+  }
+  
   public int size() {
     return availableConnections.size();
   }

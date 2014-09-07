@@ -4,25 +4,29 @@ import java.rmi.RemoteException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
+import com.google.inject.name.Named;
 import com.ikaver.aagarwal.ds.hw1.NodeState;
 import com.ikaver.aagarwal.ds.hw1.shared.IProcessManager;
 
 public class NodeManagerStateRefreshThread extends Thread {
 
-  private Lock poolLock;
+  private ReadWriteLock poolLock;
   private ProcessManagerPool pool;
-  private Lock stateLock;
+  private ReadWriteLock stateLock;
   private ProcessesState state;
 
   private static final Logger logger 
   = LogManager.getLogger(ProcessLauncher.class.getName());
 
-  public NodeManagerStateRefreshThread(ProcessManagerPool pool, Lock poolLock,
-      ProcessesState state, Lock stateLock) {
+  public NodeManagerStateRefreshThread(@Named("NMPool") ProcessManagerPool pool, 
+      @Named("NMPoolLock") ReadWriteLock poolLock,
+      @Named("NMState") ProcessesState state, 
+      @Named("NMStateLock") ReadWriteLock stateLock) {
     this.pool = pool;
     this.poolLock = poolLock;
     this.state = state;
@@ -35,26 +39,26 @@ public class NodeManagerStateRefreshThread extends Thread {
     for(String nodeId : pool.availableNodes()) {
       IProcessManager manager = null;
 
-      poolLock.lock();
+      poolLock.readLock().lock();
       try {
         manager = ProcessManagerFactory.processManagerFromConnectionString(
             pool.connectionForId(nodeId)
         );
       }
       finally {
-        poolLock.unlock();
+        poolLock.readLock().unlock();
       }
 
       boolean contactSuccess = false;
       if(manager != null) {
         try {
           NodeState nodeState = manager.getState();
-          stateLock.lock();
+          stateLock.writeLock().lock();
           try {
             state.setProcessList(nodeId, nodeState.getRunningProcesses());
           }
           finally {
-            stateLock.unlock();
+            stateLock.writeLock().unlock();
           }
           contactSuccess = true;
         }
@@ -69,12 +73,12 @@ public class NodeManagerStateRefreshThread extends Thread {
     }
 
     for(String unresponsive : unresponsiveNodes) {
-      poolLock.lock();
+      poolLock.writeLock().lock();
       try {
         pool.remove(unresponsive);
       }
       finally {
-        poolLock.unlock();
+        poolLock.writeLock().unlock();
       }
     }
   }

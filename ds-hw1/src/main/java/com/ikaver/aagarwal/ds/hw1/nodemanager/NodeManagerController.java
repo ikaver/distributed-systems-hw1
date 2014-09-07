@@ -9,6 +9,7 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import com.ikaver.aagarwal.ds.hw1.NodeState;
 import com.ikaver.aagarwal.ds.hw1.helpers.ArrayAdditions;
 import com.ikaver.aagarwal.ds.hw1.shared.INodeManager;
@@ -31,7 +32,8 @@ public class NodeManagerController {
   private INodeManager manager;
   
   @Inject
-  public NodeManagerController(InputStream input, INodeManager manager) {
+  public NodeManagerController(@Named("ControllerInput") InputStream input, 
+      INodeManager manager) {
     this.scanner = new Scanner(input);
     this.manager = manager;
   }

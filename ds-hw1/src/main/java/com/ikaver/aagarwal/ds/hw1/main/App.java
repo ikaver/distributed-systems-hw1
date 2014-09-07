@@ -9,7 +9,8 @@ public class App
   
   public static void main( String[] args )
   {
-    Injector injector = Guice.createInjector(new TestUserInputModule());        
+//    Injector injector = Guice.createInjector(new TestUserInputModule());        
+    Injector injector = Guice.createInjector(new NodeManagerModule());
     NodeManagerController controller 
       = injector.getInstance(NodeManagerController.class);
     controller.readInput();

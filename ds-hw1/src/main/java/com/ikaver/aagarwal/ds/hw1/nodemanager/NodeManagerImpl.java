@@ -3,20 +3,22 @@ package com.ikaver.aagarwal.ds.hw1.nodemanager;
 import java.rmi.RemoteException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import com.ikaver.aagarwal.ds.hw1.NodeState;
 import com.ikaver.aagarwal.ds.hw1.shared.INodeManager;
 import com.ikaver.aagarwal.ds.hw1.shared.IProcessManager;
 
 public class NodeManagerImpl implements INodeManager {
 
-  private Lock poolLock;
+  private ReadWriteLock poolLock;
   private ProcessManagerPool pool;
-  private Lock stateLock;
+  private ReadWriteLock stateLock;
   private ProcessesState state;
   private int currentPID;
   
@@ -24,9 +26,12 @@ public class NodeManagerImpl implements INodeManager {
 
   private static final Logger logger 
     = LogManager.getLogger(NodeManagerImpl.class.getName());
-
-  public NodeManagerImpl(ProcessManagerPool pool, Lock poolLock,
-      ProcessesState state, Lock stateLock) {
+  
+  @Inject
+  public NodeManagerImpl(@Named("NMPool") ProcessManagerPool pool, 
+      @Named("NMPoolLock") ReadWriteLock poolLock,
+      @Named("NMState") ProcessesState state, 
+      @Named("NMStateLock") ReadWriteLock stateLock) {
     if(pool == null) {
       throw new NullPointerException("ProcessManagerPool can't be null");
     }
@@ -113,8 +118,8 @@ public class NodeManagerImpl implements INodeManager {
   }
 
   public List<NodeState> getNodeInformation() throws RemoteException {
-    this.poolLock.lock();
-    this.stateLock.lock();
+    this.poolLock.readLock().lock();
+    this.stateLock.readLock().lock();
     List<NodeState> nodes = new LinkedList<NodeState>();
     try{
       for(String node : this.pool.availableNodes()) {
@@ -122,63 +127,63 @@ public class NodeManagerImpl implements INodeManager {
       }
     }
     finally {
-      this.stateLock.unlock();
-      this.poolLock.unlock();
+      this.stateLock.readLock().unlock();
+      this.poolLock.readLock().unlock();
     }
     return nodes;
   }
   
   private String connectionStringForNode(String node) {
     String connectionStr = null;
-    this.poolLock.lock();
+    this.poolLock.readLock().lock();
     try {
       connectionStr = this.pool.connectionForId(node); 
     }
     finally {
-      this.poolLock.unlock();
+      this.poolLock.readLock().unlock();
     }
     return connectionStr;
   }
   
   private void addProcess(int pid, String node) {
-    this.stateLock.lock();
+    this.stateLock.writeLock().lock();
     try {
       this.state.addProcessToNode(pid, node);
     }
     finally {
-      this.stateLock.unlock();
+      this.stateLock.writeLock().unlock();
     }
   }
   
   private void removeProcess(int pid, String node) {
-    this.stateLock.lock();
+    this.stateLock.writeLock().lock();
     try {
       this.state.removeProcessFromNode(pid, node);
     }
     finally {
-      this.stateLock.unlock();
+      this.stateLock.writeLock().unlock();
     }
   }
   
   private void moveProcess(int pid, String srcNode, String destNode) {
-    this.stateLock.lock();
+    this.stateLock.writeLock().unlock();
     try {
       this.state.removeProcessFromNode(pid, srcNode);
       this.state.addProcessToNode(pid, srcNode);
     }
     finally {
-      this.stateLock.unlock();
+      this.stateLock.writeLock().unlock();
     }
   }
   
   private String nodeForPID(int pid) {
     String nodeId = null;
-    this.stateLock.lock();
+    this.stateLock.readLock().lock();
     try{
       nodeId = this.state.getNodeForPID(pid);
     }
     finally {
-      this.stateLock.unlock();
+      this.stateLock.readLock().unlock();
     }
     return nodeId;
   }
