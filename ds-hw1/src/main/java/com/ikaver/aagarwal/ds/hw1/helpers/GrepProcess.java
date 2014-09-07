@@ -18,7 +18,7 @@ public class GrepProcess implements IMigratableProcess {
 
 	public void run() {
 		System.out.println("The process is running." + randomID);
-		for (int i = 0; i < 10000; i++) {
+		for (int i = 0; i < 10; i++) {
 			System.out.println("Grepping now!" + "with randomID" + ":" + randomID);
 		}
 	}
