@@ -75,17 +75,18 @@ public class ProcessManagerImpl extends UnicastRemoteObject
 
 			Constructor<IMigratableProcess> constructor = process
 					.getConstructor(String[].class);
-			IMigratableProcess newMigratableProcess = constructor
+			IMigratableProcess migratableProcess = constructor
 					.newInstance(new Object[] { args });
 
 			// Running the new process now.
-			ProcessThread thread = new ProcessThread(pid, newMigratableProcess,
+			ProcessThread thread = new ProcessThread(pid, migratableProcess,
 					this);
 			pidThreadMap.put(pid, thread);
 			thread.start();
 		} catch (ClassNotFoundException e) {
 			logger.warn(String.format("Unable to locate class %s.",
 					classDefinition));
+			return false;
 		} catch (NoSuchMethodException e) {
 			e.printStackTrace();
 			return false;
