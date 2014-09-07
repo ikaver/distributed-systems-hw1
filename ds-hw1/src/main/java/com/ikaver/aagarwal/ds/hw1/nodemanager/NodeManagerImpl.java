@@ -1,7 +1,9 @@
 package com.ikaver.aagarwal.ds.hw1.nodemanager;
 
 import java.rmi.RemoteException;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -12,7 +14,10 @@ import com.ikaver.aagarwal.ds.hw1.shared.IProcessManager;
 
 public class NodeManagerImpl implements INodeManager {
 
+  private Lock poolLock;
   private ProcessManagerPool pool;
+  private Lock stateLock;
+  private ProcessesState state;
   private int currentPID;
   
   private static final int AMOUNT_OF_RETRIES = 5;
@@ -20,12 +25,25 @@ public class NodeManagerImpl implements INodeManager {
   private static final Logger logger 
     = LogManager.getLogger(NodeManagerImpl.class.getName());
 
-  public NodeManagerImpl(ProcessManagerPool pool) {
+  public NodeManagerImpl(ProcessManagerPool pool, Lock poolLock,
+      ProcessesState state, Lock stateLock) {
     if(pool == null) {
       throw new NullPointerException("ProcessManagerPool can't be null");
     }
+    if(poolLock == null) {
+      throw new NullPointerException("Pool Lock can't be null");
+    }
+    if(state == null) {
+      throw new NullPointerException("Processes State can't be null");
+    }
+    if(stateLock == null) {
+      throw new NullPointerException("State Lock can't be null");
+    }
     this.currentPID = 0;
     this.pool = pool;
+    this.poolLock = poolLock;
+    this.state = state;
+    this.stateLock = stateLock;
   }
 
   public int launch(String className, String[] args) throws RemoteException {
@@ -34,9 +52,9 @@ public class NodeManagerImpl implements INodeManager {
     if(nodeId == null) return pid;
     
     int possiblePID = this.getNextPID();
+    String connectionStr = this.connectionStringForNode(nodeId);
     IProcessManager processManager 
-      = ProcessManagerFactory.processManagerFromConnectionString(
-          this.pool.connectionForId(nodeId));
+      = ProcessManagerFactory.processManagerFromConnectionString(connectionStr);
     ProcessLauncher launcher = new ProcessLauncher(AMOUNT_OF_RETRIES);    
     if(launcher.launch(processManager, possiblePID, className, args)) {
       pid = possiblePID;
@@ -47,22 +65,21 @@ public class NodeManagerImpl implements INodeManager {
   
   public boolean migrate(int pid, String sourceNode, String destinationNode)
       throws RemoteException {
-    String srcConnection = this.pool.connectionForId(sourceNode);
-    String destConnection = this.pool.connectionForId(destinationNode);
+    String srcConnection = this.connectionStringForNode(sourceNode);
+    String destConnection = this.connectionStringForNode(destinationNode);
     if(srcConnection == null || destConnection == null) return false;
+    boolean success = false;
     String packedProcess = null;
     IProcessManager srcManager
     = ProcessManagerFactory.processManagerFromConnectionString(srcConnection);
+    IProcessManager destManager
+    = ProcessManagerFactory.processManagerFromConnectionString(destConnection);
     try {
       if(srcManager != null) packedProcess = srcManager.pack(pid);
     }
     catch(RemoteException e) {
       logger.error("Bad src migration", e);
     }
-    
-    boolean success = false;
-    IProcessManager destManager
-    = ProcessManagerFactory.processManagerFromConnectionString(destConnection);
     try {
       if(destManager != null) success = destManager.unpack(pid, packedProcess);
     }
@@ -78,9 +95,10 @@ public class NodeManagerImpl implements INodeManager {
   public boolean remove(int pid) throws RemoteException {
     String nodeId = this.nodeForPID(pid);
     if(nodeId == null) return false;
+    
+    String connectionStr = this.connectionStringForNode(nodeId);
     IProcessManager processManager 
-      = ProcessManagerFactory.processManagerFromConnectionString(
-          this.pool.connectionForId(nodeId));
+      = ProcessManagerFactory.processManagerFromConnectionString(connectionStr);
     boolean success = false;
     try {
       if(processManager != null) success = processManager.remove(pid);
@@ -95,24 +113,74 @@ public class NodeManagerImpl implements INodeManager {
   }
 
   public List<NodeState> getNodeInformation() throws RemoteException {
-    // TODO Auto-generated method stub
-    return null;
+    this.poolLock.lock();
+    this.stateLock.lock();
+    List<NodeState> nodes = new LinkedList<NodeState>();
+    try{
+      for(String node : this.pool.availableNodes()) {
+        nodes.add(new NodeState(node, this.state.getProcessList(node)));
+      }
+    }
+    finally {
+      this.stateLock.unlock();
+      this.poolLock.unlock();
+    }
+    return nodes;
+  }
+  
+  private String connectionStringForNode(String node) {
+    String connectionStr = null;
+    this.poolLock.lock();
+    try {
+      connectionStr = this.pool.connectionForId(node); 
+    }
+    finally {
+      this.poolLock.unlock();
+    }
+    return connectionStr;
   }
   
   private void addProcess(int pid, String node) {
-    throw new UnsupportedOperationException("Not implemented yet");
+    this.stateLock.lock();
+    try {
+      this.state.addProcessToNode(pid, node);
+    }
+    finally {
+      this.stateLock.unlock();
+    }
   }
   
   private void removeProcess(int pid, String node) {
-    throw new UnsupportedOperationException("Not implemented yet");
+    this.stateLock.lock();
+    try {
+      this.state.removeProcessFromNode(pid, node);
+    }
+    finally {
+      this.stateLock.unlock();
+    }
   }
   
   private void moveProcess(int pid, String srcNode, String destNode) {
-    throw new UnsupportedOperationException("Not implemented yet");
+    this.stateLock.lock();
+    try {
+      this.state.removeProcessFromNode(pid, srcNode);
+      this.state.addProcessToNode(pid, srcNode);
+    }
+    finally {
+      this.stateLock.unlock();
+    }
   }
   
   private String nodeForPID(int pid) {
-    throw new UnsupportedOperationException("Not implemented yet");
+    String nodeId = null;
+    this.stateLock.lock();
+    try{
+      nodeId = this.state.getNodeForPID(pid);
+    }
+    finally {
+      this.stateLock.unlock();
+    }
+    return nodeId;
   }
 
   private int getNextPID() {
