@@ -17,6 +17,7 @@ public class ProcessManagerFactory {
     = LogManager.getLogger(ProcessManagerFactory.class.getName());
   
   public static IProcessManager processManagerFromConnectionString(String connectionStr) {
+    if(connectionStr == null) return null;
     String url = String.format(
         "//%s/%s", 
         connectionStr, 
