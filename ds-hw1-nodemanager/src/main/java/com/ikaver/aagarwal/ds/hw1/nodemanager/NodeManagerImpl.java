@@ -13,6 +13,7 @@ import com.google.inject.name.Named;
 import com.ikaver.aagarwal.ds.hw1.shared.NodeState;
 import com.ikaver.aagarwal.ds.hw1.shared.INodeManager;
 import com.ikaver.aagarwal.ds.hw1.shared.IProcessManager;
+import com.ikaver.aagarwal.ds.hw1.shared.helpers.MathHelper;
 
 public class NodeManagerImpl implements INodeManager {
 
@@ -193,12 +194,22 @@ public class NodeManagerImpl implements INodeManager {
     return ++this.currentPID;
   }
 
+  /*
+   * Chooses a node from the connection pool. Currently, the nodes are chosen
+   * randomly.
+   */
   private String chooseNodeFromPool() {
-    if(this.pool.size() > 0) {
-      return this.pool.availableNodes().iterator().next();
+    String selectedNode = null;
+    this.poolLock.readLock().lock();
+    try {
+      String [] nodes = new String[this.pool.size()];
+      this.pool.availableNodes().toArray(nodes);
+      int randomIndex = MathHelper.randomIntInRange(0, this.pool.size());
+      selectedNode = nodes[randomIndex];
     }
-    else {
-      return null;
+    finally {
+      this.poolLock.readLock().unlock();
     }
+    return selectedNode;
   }
 }
