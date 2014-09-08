@@ -17,10 +17,8 @@ import com.ikaver.aagarwal.ds.hw1.shared.helpers.MathHelper;
 
 public class NodeManagerImpl implements INodeManager {
 
-  private ReadWriteLock poolLock;
-  private ProcessManagerPool pool;
   private ReadWriteLock stateLock;
-  private ProcessesState state;
+  private SubscribedNodesState state;
   private int currentPID;
   
   private static final int AMOUNT_OF_RETRIES = 5;
@@ -29,16 +27,9 @@ public class NodeManagerImpl implements INodeManager {
     = LogManager.getLogger(NodeManagerImpl.class.getName());
   
   @Inject
-  public NodeManagerImpl(@Named("NMPool") ProcessManagerPool pool, 
-      @Named("NMPoolLock") ReadWriteLock poolLock,
-      @Named("NMState") ProcessesState state, 
+  public NodeManagerImpl(
+      @Named("NMState") SubscribedNodesState state, 
       @Named("NMStateLock") ReadWriteLock stateLock) {
-    if(pool == null) {
-      throw new NullPointerException("ProcessManagerPool can't be null");
-    }
-    if(poolLock == null) {
-      throw new NullPointerException("Pool Lock can't be null");
-    }
     if(state == null) {
       throw new NullPointerException("Processes State can't be null");
     }
@@ -46,8 +37,6 @@ public class NodeManagerImpl implements INodeManager {
       throw new NullPointerException("State Lock can't be null");
     }
     this.currentPID = 0;
-    this.pool = pool;
-    this.poolLock = poolLock;
     this.state = state;
     this.stateLock = stateLock;
   }
@@ -87,7 +76,9 @@ public class NodeManagerImpl implements INodeManager {
       logger.error("Bad src migration", e);
     }
     try {
-      if(destManager != null) success = destManager.unpack(pid, packedProcess);
+      if(destManager != null && packedProcess != null) {
+        success = destManager.unpack(pid, packedProcess);
+      }
     }
     catch(RemoteException e) {
       logger.error("Bad unpack", e);
@@ -110,38 +101,36 @@ public class NodeManagerImpl implements INodeManager {
       if(processManager != null) success = processManager.remove(pid);
     }
     catch(RemoteException e) {
-      logger.error("Bad unpack", e);
+      logger.error("Bad remove", e);
     }
     if(success) {
-      this.removeProcess(pid, nodeId);
+      this.removeProcess(pid);
     }
     return success;
   }
 
   public List<NodeState> getNodeInformation() throws RemoteException {
-    this.poolLock.readLock().lock();
     this.stateLock.readLock().lock();
     List<NodeState> nodes = new LinkedList<NodeState>();
     try{
-      for(String node : this.pool.availableNodes()) {
+      for(String node : this.state.availableNodes()) {
         nodes.add(new NodeState(node, this.state.getProcessList(node)));
       }
     }
     finally {
       this.stateLock.readLock().unlock();
-      this.poolLock.readLock().unlock();
     }
     return nodes;
   }
   
   private String connectionStringForNode(String node) {
     String connectionStr = null;
-    this.poolLock.readLock().lock();
+    this.stateLock.readLock().lock();
     try {
-      connectionStr = this.pool.connectionForId(node); 
+      connectionStr = this.state.connectionStringForNode(node); 
     }
     finally {
-      this.poolLock.readLock().unlock();
+      this.stateLock.readLock().unlock();
     }
     return connectionStr;
   }
@@ -156,10 +145,10 @@ public class NodeManagerImpl implements INodeManager {
     }
   }
   
-  private void removeProcess(int pid, String node) {
+  private void removeProcess(int pid) {
     this.stateLock.writeLock().lock();
     try {
-      this.state.removeProcessFromNode(pid, node);
+      this.state.removeProcessFromCurrentNode(pid);
     }
     finally {
       this.stateLock.writeLock().unlock();
@@ -169,7 +158,7 @@ public class NodeManagerImpl implements INodeManager {
   private void moveProcess(int pid, String srcNode, String destNode) {
     this.stateLock.writeLock().unlock();
     try {
-      this.state.removeProcessFromNode(pid, srcNode);
+      this.state.removeProcessFromCurrentNode(pid);
       this.state.addProcessToNode(pid, srcNode);
     }
     finally {
@@ -200,17 +189,20 @@ public class NodeManagerImpl implements INodeManager {
    */
   private String chooseNodeFromPool() {
     String selectedNode = null;
-    this.poolLock.readLock().lock();
+    this.stateLock.readLock().lock();
     try {
-      String [] nodes = new String[this.pool.size()];
+      String [] nodes = new String[this.state.nodeCount()];
       if(nodes.length > 0) {
-        this.pool.availableNodes().toArray(nodes);
-        int randomIndex = MathHelper.randomIntInRange(0, this.pool.size());
+        this.state.availableNodes().toArray(nodes);
+        int randomIndex = MathHelper.randomIntInRange(0, this.state.nodeCount());
         selectedNode = nodes[randomIndex];
+      }
+      else {
+        logger.warn("Couldn't find an available node");
       }
     }
     finally {
-      this.poolLock.readLock().unlock();
+      this.stateLock.readLock().unlock();
     }
     return selectedNode;
   }

@@ -193,8 +193,8 @@ public class NodeManagerController {
   
   private void printHelp() {
     System.out.println("Invalid command. Use: ");
-    System.out.println("\tk PROCESS_ID");
-    System.out.println("\tl CLASS_NAME ARGS");
-    System.out.println("\tm PROCESS_ID SOURCE_NODE DESTINATION_NODE");
+    System.out.printf("\t%s PROCESS_ID\n", KILL_COMMAND);
+    System.out.printf("\t%s CLASS_NAME ARGS\n", LAUNCH_COMMAND);
+    System.out.printf("\t%s PROCESS_ID SOURCE_NODE DESTINATION_NODE\n", MIGRATE_COMMAND);
   }
 }
