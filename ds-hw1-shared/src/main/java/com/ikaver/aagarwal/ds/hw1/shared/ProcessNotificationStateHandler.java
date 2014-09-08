@@ -1,9 +1,8 @@
-package com.ikaver.aagarwal.ds.hw1.processmanager;
+package com.ikaver.aagarwal.ds.hw1.shared;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-import com.ikaver.aagarwal.ds.hw1.shared.ProcessState;
 
 /**
  * Interface for handling process state changes.

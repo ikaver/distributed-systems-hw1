@@ -13,6 +13,7 @@ import com.google.inject.Singleton;
 import com.ikaver.aagarwal.ds.hw1.shared.NodeState;
 import com.ikaver.aagarwal.ds.hw1.shared.IMigratableProcess;
 import com.ikaver.aagarwal.ds.hw1.shared.IProcessManager;
+import com.ikaver.aagarwal.ds.hw1.shared.ProcessNotificationStateHandler;
 import com.ikaver.aagarwal.ds.hw1.shared.ProcessState;
 
 @Singleton
@@ -83,8 +84,7 @@ public class ProcessManagerImpl extends UnicastRemoteObject
 			pidThreadMap.put(pid, thread);
 			thread.start();
 		} catch (ClassNotFoundException e) {
-			logger.warn(String.format("Unable to locate class %s.",
-					classDefinition));
+			logger.warn("Class not found", e);
 			return false;
 		} catch (NoSuchMethodException e) {
 			e.printStackTrace();
