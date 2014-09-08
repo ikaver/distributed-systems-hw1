@@ -13,7 +13,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- Add default program parameters here -->
-    <!--<isServer>1</isServer> -->
+    <portNumber>2000</portNumber>
   </properties>
 
   <build>
@@ -32,7 +32,7 @@
               <!-- Add main class here -->
               <argument>com.ikaver.aagarwal.ds.hw1.processmanager.ProcessManagerEntryPoint</argument>
               <!-- Add custom program parameters here (declared in properties) -->
-              <!--<argument>${isServer}</argument> -->
+              <argument>${portNumber}</argument>
             </arguments>
           </configuration>
         </plugin>
