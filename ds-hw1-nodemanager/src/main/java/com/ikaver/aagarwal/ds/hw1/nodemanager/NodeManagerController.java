@@ -20,9 +20,9 @@ import com.ikaver.aagarwal.ds.hw1.shared.INodeManager;
  */
 public class NodeManagerController {
   
-  private static final String MIGRATE_COMMAND = "m";
-  private static final String KILL_COMMAND = "k";
-  private static final String LAUNCH_COMMAND = "l";
+  private static final String MIGRATE_COMMAND = "mig";
+  private static final String KILL_COMMAND = "kill";
+  private static final String LAUNCH_COMMAND = "launch";
   private static final String NODE_INFO_COMMAND = "info";
   
   private static final Logger logger 
