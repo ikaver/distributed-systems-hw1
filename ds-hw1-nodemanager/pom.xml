@@ -31,7 +31,7 @@
               <argument>-classpath</argument>
               <classpath />
               <!-- Add main class here -->
-              <argument>com.ikaver.aagarwal.ds.hw1.processmanager.main.App</argument>
+              <argument>com.ikaver.aagarwal.ds.hw1.nodemanager.main.App</argument>
               <!-- Add custom program parameters here (declared in properties) -->
               <!--<argument>${isServer}</argument> -->
             </arguments>
