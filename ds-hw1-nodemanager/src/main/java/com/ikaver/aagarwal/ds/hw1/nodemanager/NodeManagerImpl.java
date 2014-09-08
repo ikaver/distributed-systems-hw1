@@ -203,9 +203,11 @@ public class NodeManagerImpl implements INodeManager {
     this.poolLock.readLock().lock();
     try {
       String [] nodes = new String[this.pool.size()];
-      this.pool.availableNodes().toArray(nodes);
-      int randomIndex = MathHelper.randomIntInRange(0, this.pool.size());
-      selectedNode = nodes[randomIndex];
+      if(nodes.length > 0) {
+        this.pool.availableNodes().toArray(nodes);
+        int randomIndex = MathHelper.randomIntInRange(0, this.pool.size());
+        selectedNode = nodes[randomIndex];
+      }
     }
     finally {
       this.poolLock.readLock().unlock();

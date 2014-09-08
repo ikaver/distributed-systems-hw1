@@ -52,6 +52,10 @@ public class ProcessesState {
     }
   }
   
+  public void clearProcessList(String node) {
+    this.setProcessList(node, new LinkedList<Integer>());
+  }
+  
   public boolean removeProcessFromNode(Integer pid, String node) {
     boolean foundNode = false;
     if(node != null && node.equals(this.pidToNodeId.get(pid))) {

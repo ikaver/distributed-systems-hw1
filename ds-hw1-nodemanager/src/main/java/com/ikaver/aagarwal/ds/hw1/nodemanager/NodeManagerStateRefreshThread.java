@@ -8,11 +8,12 @@ import java.util.concurrent.locks.ReadWriteLock;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
+import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.ikaver.aagarwal.ds.hw1.shared.NodeState;
 import com.ikaver.aagarwal.ds.hw1.shared.IProcessManager;
 
-public class NodeManagerStateRefreshThread extends Thread {
+public class NodeManagerStateRefreshThread implements Runnable {
 
   private ReadWriteLock poolLock;
   private ProcessManagerPool pool;
@@ -22,6 +23,7 @@ public class NodeManagerStateRefreshThread extends Thread {
   private static final Logger logger 
   = LogManager.getLogger(ProcessLauncher.class.getName());
 
+  @Inject
   public NodeManagerStateRefreshThread(@Named("NMPool") ProcessManagerPool pool, 
       @Named("NMPoolLock") ReadWriteLock poolLock,
       @Named("NMState") ProcessesState state, 
@@ -42,7 +44,7 @@ public class NodeManagerStateRefreshThread extends Thread {
       try {
         manager = ProcessManagerFactory.processManagerFromConnectionString(
             pool.connectionForId(nodeId)
-        );
+            );
       }
       finally {
         poolLock.readLock().unlock();
@@ -52,20 +54,25 @@ public class NodeManagerStateRefreshThread extends Thread {
       if(manager != null) {
         try {
           NodeState nodeState = manager.getState();
+          contactSuccess = true;
           stateLock.writeLock().lock();
           try {
-            state.setProcessList(nodeId, nodeState.getRunningProcesses());
+            if(nodeState != null) {
+              state.setProcessList(nodeId, nodeState.getRunningProcesses());
+            }
+            else {
+              state.clearProcessList(nodeId);
+            }
           }
           finally {
             stateLock.writeLock().unlock();
           }
-          contactSuccess = true;
         }
         catch(RemoteException e) {
           logger.error("Bad get state", e);
         }
       }
-      
+
       if(!contactSuccess) {
         unresponsiveNodes.add(nodeId);
       }
@@ -74,12 +81,13 @@ public class NodeManagerStateRefreshThread extends Thread {
     for(String unresponsive : unresponsiveNodes) {
       poolLock.writeLock().lock();
       try {
+        System.out.printf("Node %s is unresponsive, disconnecting...\n", unresponsive);        
         pool.remove(unresponsive);
       }
       finally {
         poolLock.writeLock().unlock();
       }
-    }
+    }    
   }
 
 
