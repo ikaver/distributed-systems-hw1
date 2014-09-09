@@ -19,12 +19,10 @@ public class NodeManagerModule extends AbstractModule {
     ReadWriteLock stateLock = new ReentrantReadWriteLock();
     SubscribedNodesState state = new SubscribedNodesState();
     state.addNode("1", "localhost:2000");
+    state.addNode("2", "localhost:3000");
     
-    System.out.println("BIND LOCK");
     bind(ReadWriteLock.class).annotatedWith(Names.named("NMStateLock"))
       .toInstance(stateLock);
-    System.out.println("BIND SUBSCRIBED");
-
     bind(SubscribedNodesState.class).annotatedWith(Names.named("NMState"))
       .toInstance(state);
   }

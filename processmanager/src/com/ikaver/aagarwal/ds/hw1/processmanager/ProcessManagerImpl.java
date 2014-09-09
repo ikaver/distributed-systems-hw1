@@ -4,6 +4,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
@@ -26,6 +29,8 @@ public class ProcessManagerImpl extends UnicastRemoteObject
 	private final ConcurrentHashMap<Integer, IMigratableProcess> pidProcessMap = new ConcurrentHashMap<Integer, IMigratableProcess>();
 
 	private final Logger logger = Logger.getLogger(ProcessManagerImpl.class);
+	
+	private final String PROCESS_MANAGER_ID = UUID.randomUUID().toString();
 
 	@Inject
 	public ProcessManagerImpl() throws RemoteException {
@@ -40,15 +45,30 @@ public class ProcessManagerImpl extends UnicastRemoteObject
 	}
 
 	public NodeState getState() {
-		return null;
+		List<Integer> pids = new ArrayList<Integer>(pidProcessMap.keySet());
+		NodeState state = new NodeState(PROCESS_MANAGER_ID, pids);
+		return state;
 	}
 
-	public String pack(int pid) {
-		return null;
+	public synchronized IMigratableProcess pack(int pid) {
+		IMigratableProcess process = pidProcessMap.get(pid);
+		if (process != null) {
+			// Try to suspend the process and return the state.
+			process.suspend();
+			pidProcessMap.remove(pid);
+			pidThreadMap.remove(pid);
+		}
+		return process;
 	}
 
-	public boolean unpack(int pid, String serializedProcess) {
-		return false;
+	public boolean unpack(int pid, IMigratableProcess process) {
+		if (process != null) {
+			startProcess(pid, process);
+			return true;
+		} else {
+			// Attempting to unpack a null process.
+			return false;
+		}
 	}
 
 	public boolean remove(int pid) {
@@ -78,11 +98,7 @@ public class ProcessManagerImpl extends UnicastRemoteObject
 			IMigratableProcess migratableProcess = constructor
 					.newInstance(new Object[] { args });
 
-			// Running the new process now.
-			ProcessThread thread = new ProcessThread(pid, migratableProcess,
-					this);
-			pidThreadMap.put(pid, thread);
-			thread.start();
+			startProcess(pid, migratableProcess);
 		} catch (ClassNotFoundException e) {
 			logger.warn("Class not found", e);
 			return false;
@@ -106,6 +122,15 @@ public class ProcessManagerImpl extends UnicastRemoteObject
 			return false;
 		}
 		return true;
+	}
+
+	private void startProcess(int pid, IMigratableProcess migratableProcess) {
+		// Running the new process now.
+		ProcessThread thread = new ProcessThread(pid, migratableProcess,
+				this);
+		pidThreadMap.put(pid, thread);
+		pidProcessMap.put(pid, migratableProcess);
+		thread.start();
 	}
 
 	public void updateProcessState(int pid, ProcessState state) {

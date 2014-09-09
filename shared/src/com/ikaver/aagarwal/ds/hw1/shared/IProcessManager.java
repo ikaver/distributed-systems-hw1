@@ -19,7 +19,7 @@ public interface IProcessManager extends Remote {
    * @return A serialized version of the suspended process with the given pid.
    * @see MigratableProcess
    */
-  public String pack(int pid) throws RemoteException;
+  public IMigratableProcess pack(int pid) throws RemoteException;
   
   /**
    * Deserializes and runs the migratable process with the given pid on the 
@@ -28,7 +28,7 @@ public interface IProcessManager extends Remote {
    * @param serializedProcess A serialized version of the process that represents
    * its current state.
    */
-  public boolean unpack(int pid, String serializedProcess) 
+  public boolean unpack(int pid, IMigratableProcess serializedProcess) 
       throws RemoteException;
   
   /**

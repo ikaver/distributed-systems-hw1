@@ -6,15 +6,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import com.google.inject.Inject;
-
 public class SubscribedNodesState {
 
   private HashMap<String, String> nodeIdToConnectionStr;
   private HashMap<String, List<Integer>> nodeIdToPid;
   private HashMap<Integer, String> pidToNodeId;
   
-  @Inject
   public SubscribedNodesState() {
     this.nodeIdToConnectionStr = new HashMap<String, String>();
     this.nodeIdToPid = new HashMap<String, List<Integer>>();
