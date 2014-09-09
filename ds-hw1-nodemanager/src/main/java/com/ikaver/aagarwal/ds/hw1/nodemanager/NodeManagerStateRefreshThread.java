@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import com.ikaver.aagarwal.ds.hw1.nodemanager.ProcessManagerFactory;
 import com.ikaver.aagarwal.ds.hw1.shared.NodeState;
 import com.ikaver.aagarwal.ds.hw1.shared.IProcessManager;
 
@@ -19,7 +20,7 @@ public class NodeManagerStateRefreshThread implements Runnable {
   private SubscribedNodesState state;
 
   private static final Logger logger 
-  = LogManager.getLogger(ProcessLauncher.class.getName());
+  = LogManager.getLogger(NodeManagerStateRefreshThread.class.getName());
 
   @Inject
   public NodeManagerStateRefreshThread(
