@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import com.ikaver.aagarwal.ds.hw1.shared.IMigratableProcess;
 import com.ikaver.aagarwal.ds.hw1.shared.NodeState;
 import com.ikaver.aagarwal.ds.hw1.shared.INodeManager;
 import com.ikaver.aagarwal.ds.hw1.shared.IProcessManager;
@@ -64,7 +65,7 @@ public class NodeManagerImpl implements INodeManager {
     String destConnection = this.connectionStringForNode(destinationNode);
     if(srcConnection == null || destConnection == null) return false;
     boolean success = false;
-    String packedProcess = null;
+    IMigratableProcess packedProcess = null;
     IProcessManager srcManager
     = ProcessManagerFactory.processManagerFromConnectionString(srcConnection);
     IProcessManager destManager
@@ -156,7 +157,7 @@ public class NodeManagerImpl implements INodeManager {
   }
   
   private void moveProcess(int pid, String srcNode, String destNode) {
-    this.stateLock.writeLock().unlock();
+    this.stateLock.writeLock().lock();
     try {
       this.state.removeProcessFromCurrentNode(pid);
       this.state.addProcessToNode(pid, srcNode);
