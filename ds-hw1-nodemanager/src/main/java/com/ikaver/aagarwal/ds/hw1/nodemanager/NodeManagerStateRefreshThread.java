@@ -80,8 +80,9 @@ public class NodeManagerStateRefreshThread implements Runnable {
   }
   
   private void queryDeadNodes() {
+    Set<String> backToLifeNodes = new HashSet<String>();
     for(String deadNode : this.deadNodes) {
-      
+      System.out.println("Dead node: " + deadNode);
       IProcessManager manager = ProcessManagerFactory.processManagerFromConnectionString(deadNode);
       boolean contactSuccess = false;
       if(manager != null) {
@@ -95,14 +96,18 @@ public class NodeManagerStateRefreshThread implements Runnable {
         this.stateLock.writeLock().lock();
         try {
           String newId = this.state.addNode(deadNode);
-          this.deadNodes.remove(deadNode);
+          backToLifeNodes.add(deadNode);
           System.out.printf("Node %s is back alive with id %s\n", deadNode, newId);
+        }
+        catch(Exception e) {
+          logger.error("Bad node revive", e);
         }
         finally {
           this.stateLock.writeLock().unlock();
         }
       }
     }
+    this.deadNodes.removeAll(backToLifeNodes);
   }
   
   private void updateNodeState(String nodeId, NodeState nodeState) {
@@ -114,6 +119,9 @@ public class NodeManagerStateRefreshThread implements Runnable {
       else {
         this.state.clearProcessList(nodeId);
       }
+    }
+    catch(Exception e) {
+      logger.error("Bad node state update", e);
     }
     finally {
       this.stateLock.writeLock().unlock();
@@ -130,6 +138,9 @@ public class NodeManagerStateRefreshThread implements Runnable {
       this.stateLock.writeLock().lock();
       try {
         this.state.removeNode(unresponsive);
+      }
+      catch(Exception e) {
+        logger.error("Bad node remove", e);
       }
       finally {
         this.stateLock.writeLock().unlock();
