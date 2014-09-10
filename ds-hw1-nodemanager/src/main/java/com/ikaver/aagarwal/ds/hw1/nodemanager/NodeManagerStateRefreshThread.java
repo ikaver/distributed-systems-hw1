@@ -82,7 +82,6 @@ public class NodeManagerStateRefreshThread implements Runnable {
   private void queryDeadNodes() {
     Set<String> backToLifeNodes = new HashSet<String>();
     for(String deadNode : this.deadNodes) {
-      System.out.println("Dead node: " + deadNode);
       IProcessManager manager = ProcessManagerFactory.processManagerFromConnectionString(deadNode);
       boolean contactSuccess = false;
       if(manager != null) {
