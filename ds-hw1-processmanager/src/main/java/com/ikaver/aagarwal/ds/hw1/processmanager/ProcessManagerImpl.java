@@ -46,6 +46,9 @@ public class ProcessManagerImpl extends UnicastRemoteObject
 
 	public NodeState getState() {
 		List<Integer> pids = new ArrayList<Integer>(pidProcessMap.keySet());
+		// We are passing a random node id to the server id. The server may have a 
+		// different naming convention for this slave node and hence 
+		// can(will) choose to ignore it (as in the current implementation).
 		NodeState state = new NodeState(PROCESS_MANAGER_ID, pids);
 		return state;
 	}
