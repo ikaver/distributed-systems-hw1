@@ -41,8 +41,21 @@ public class NodeManagerImpl implements INodeManager {
     this.state = state;
     this.stateLock = stateLock;
   }
+  
+  public String addNode(String connectionString) {
+    this.stateLock.writeLock().lock();
+    String id = null;
+    try {
+      id = this.state.addNode(connectionString);
+    }
+    finally {
+      this.stateLock.writeLock().unlock();
+    }
+    return id;
+  }
 
-  public int launch(String className, String[] args) throws RemoteException {
+
+  public int launch(String className, String[] args) {
     int pid = -1;
     String nodeId = this.chooseNodeFromPool();
     if(nodeId == null) return pid;
@@ -59,8 +72,7 @@ public class NodeManagerImpl implements INodeManager {
     return pid;
   }
   
-  public boolean migrate(int pid, String sourceNode, String destinationNode)
-      throws RemoteException {
+  public boolean migrate(int pid, String sourceNode, String destinationNode) {
     String srcConnection = this.connectionStringForNode(sourceNode);
     String destConnection = this.connectionStringForNode(destinationNode);
     if(srcConnection == null || destConnection == null) return false;
@@ -90,7 +102,7 @@ public class NodeManagerImpl implements INodeManager {
     return success;
   }
 
-  public boolean remove(int pid) throws RemoteException {
+  public boolean remove(int pid) {
     String nodeId = this.nodeForPID(pid);
     if(nodeId == null) return false;
     
@@ -110,7 +122,7 @@ public class NodeManagerImpl implements INodeManager {
     return success;
   }
 
-  public List<NodeState> getNodeInformation() throws RemoteException {
+  public List<NodeState> getNodeInformation() {
     this.stateLock.readLock().lock();
     List<NodeState> nodes = new LinkedList<NodeState>();
     try{
