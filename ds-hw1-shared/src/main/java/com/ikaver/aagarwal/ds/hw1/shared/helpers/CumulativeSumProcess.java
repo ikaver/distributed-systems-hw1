@@ -21,7 +21,7 @@ public class CumulativeSumProcess implements IMigratableProcess {
 			.getLogger(CumulativeSumProcess.class);
 
 	private volatile boolean suspending;
-	private int cumulativeSum;
+	private int cumulativeSum = 0;
 	private int pos;
 
 	public CumulativeSumProcess(String[] args) throws Exception {
@@ -30,8 +30,8 @@ public class CumulativeSumProcess implements IMigratableProcess {
 			throw new Exception("Invalid number of arguments");
 		}
 
-		inFile = new TransactionalFileInputStream(args[1]);
-		outFile = new TransactionalFileOutputStream(args[2]);
+		inFile = new TransactionalFileInputStream(args[0]);
+		outFile = new TransactionalFileOutputStream(args[1]);
 	}
 
 	public void run() {
@@ -40,28 +40,38 @@ public class CumulativeSumProcess implements IMigratableProcess {
 
 		try {
 			while (!suspending) {
-				cumulativeSum = cumulativeSum + in.readInt();
-				out.print(String.format("Cumulative Sum:%d till position:%d\n",
-						cumulativeSum, pos));
-				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
+				String line = in.readLine();
+				if (line != null) {
+					int n = Integer.valueOf(line);
+					cumulativeSum = cumulativeSum + n;
+					out.print(String.format(
+							"Cumulative Sum:%d till position:%d\n",
+							cumulativeSum, pos));
+					System.out.println(String.format(
+							"Cumulative Sum:%d till position:%d\n",
+							cumulativeSum, pos));
+					try {
+						Thread.sleep(100);
+					} catch (InterruptedException e) {
 
+					}
+					pos++;
 				}
 			}
 		} catch (EOFException e) {
 
-		  // eof reached!
+			// eof reached!
 		} catch (IOException e) {
 			LOGGER.error("CumulativeProcessError: Error" + e);
 		}
-		
+
 		suspending = false;
 	}
 
 	public void suspend() {
 		suspending = true;
-		while (suspending);
+		while (suspending)
+			;
 	}
 
 }
