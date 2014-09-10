@@ -22,6 +22,10 @@ public class NodeManagerMockImpl implements INodeManager {
     this.currentNode = 0;
   }
   
+  public String addNode(String connectionString) {
+    return null;
+  }
+  
   public int launch(String className, String[] args) {
     ++this.currentId;
     this.addProcessToNode(this.currentId, ""+this.currentNode);
