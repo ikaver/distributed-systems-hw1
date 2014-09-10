@@ -1,7 +1,11 @@
-
+#!/bin/bash
 #Runs a slave node on the given port. Also, start the rmi registry on the same port.
-#Must be run from inside package-manager package
-#Usage sh runslave.sh <port-number>
-fuser -k $1/tcp
-rmiregistry $1 &
-mvn exec:exec -DportNumber=$1
+#Usage sh runslave.sh <jar-file> <port-number>
+
+[ $# -lt 2 ] && { echo "Usage: $1 jar file $2 port number"; exit 1; }
+
+export CLASSPATH="$CLASSPATH:$1"
+echo "USING class path: $CLASSPATH"
+fuser -k $2/tcp
+rmiregistry $2 &
+java -jar "$1" $2
