@@ -11,7 +11,6 @@ public class TransactionalFileOutputStream extends OutputStream implements Seria
   private static final long serialVersionUID = 6197467219240327863L;
   
   private File file;
-  private long offset;
   
   public TransactionalFileOutputStream(String file) throws IOException {
     this(file, false);
@@ -19,7 +18,6 @@ public class TransactionalFileOutputStream extends OutputStream implements Seria
 
   public TransactionalFileOutputStream(String file, boolean append) throws IOException {
     this.file = new File(file);
-    this.offset = append ? file.length() : 0;
     FileOutputStream stream = new FileOutputStream(this.file, append);
     stream.close();
   }
@@ -27,11 +25,8 @@ public class TransactionalFileOutputStream extends OutputStream implements Seria
   @Override
   public void write(int b) throws IOException {
     FileOutputStream stream = new FileOutputStream(this.file, true);
-    byte [] array = new byte[1];
-    array[0] = new Integer(b).byteValue();
-    stream.write(array, (int)this.offset, 1);
+    stream.write(b);
     stream.close();
-    ++this.offset;
   }
 
 }
