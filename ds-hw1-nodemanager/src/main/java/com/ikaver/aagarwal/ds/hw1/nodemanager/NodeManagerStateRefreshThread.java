@@ -89,9 +89,7 @@ public class NodeManagerStateRefreshThread implements Runnable {
           manager.getState();
           contactSuccess = true;
         }
-        catch(RemoteException e) {
-          logger.error("Bad get state", e);
-        }
+        catch(RemoteException e) { }
       }
       if(contactSuccess) {
         this.stateLock.writeLock().lock();

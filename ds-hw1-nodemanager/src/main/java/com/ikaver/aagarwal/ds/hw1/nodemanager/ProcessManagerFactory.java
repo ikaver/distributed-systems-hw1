@@ -26,11 +26,11 @@ public class ProcessManagerFactory {
     try {
       return (IProcessManager) Naming.lookup (url);
     } catch (MalformedURLException e) {
-      logger.error("Bad URL", e);
+      logger.info("Bad URL", e);
     } catch (RemoteException e) {
-      logger.error("Remote exception", e);
+      logger.info("Remote connection refused to url "+ connectionStr);
     } catch (NotBoundException e) {
-      logger.error("Not bound", e);
+      logger.info("Not bound", e);
     }
     return null;
   }
