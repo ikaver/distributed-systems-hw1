@@ -11,12 +11,12 @@ import org.apache.log4j.Logger;
 import com.ikaver.aagarwal.ds.hw1.shared.Definitions;
 import com.ikaver.aagarwal.ds.hw1.shared.IProcessManager;
 
-public class ProcessManagerFactory {
+public class ProcessManagerFactoryImpl implements IProcessManagerFactory {
   
   private static final Logger logger 
-    = LogManager.getLogger(ProcessManagerFactory.class.getName());
+    = LogManager.getLogger(ProcessManagerFactoryImpl.class.getName());
   
-  public static IProcessManager processManagerFromConnectionString(String connectionStr) {
+  public IProcessManager processManagerFromConnectionString(String connectionStr) {
     if(connectionStr == null) return null;
     String url = String.format(
         "//%s/%s", 

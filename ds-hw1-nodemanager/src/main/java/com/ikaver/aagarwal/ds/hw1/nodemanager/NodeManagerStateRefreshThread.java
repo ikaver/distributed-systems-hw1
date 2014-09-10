@@ -11,12 +11,12 @@ import org.apache.log4j.Logger;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import com.ikaver.aagarwal.ds.hw1.nodemanager.ProcessManagerFactory;
-import com.ikaver.aagarwal.ds.hw1.shared.NodeState;
 import com.ikaver.aagarwal.ds.hw1.shared.IProcessManager;
+import com.ikaver.aagarwal.ds.hw1.shared.NodeState;
 
 public class NodeManagerStateRefreshThread implements Runnable {
 
+  private IProcessManagerFactory processManagerFactory;
   private ReadWriteLock stateLock;
   private Set<String> deadNodes;
   private SubscribedNodesState state;
@@ -26,8 +26,10 @@ public class NodeManagerStateRefreshThread implements Runnable {
 
   @Inject
   public NodeManagerStateRefreshThread(
+      @Named("ProcessManagerFactory") IProcessManagerFactory factory,
       @Named("NMState") SubscribedNodesState state, 
       @Named("NMStateLock") ReadWriteLock stateLock) {
+    this.processManagerFactory = factory;
     this.state = state;
     this.stateLock = stateLock;
     this.deadNodes = new HashSet<String>();
@@ -61,7 +63,7 @@ public class NodeManagerStateRefreshThread implements Runnable {
         this.stateLock.readLock().unlock();
       }
       
-      IProcessManager manager = ProcessManagerFactory.processManagerFromConnectionString(connectionForId);
+      IProcessManager manager = this.processManagerFactory.processManagerFromConnectionString(connectionForId);
       boolean contactSuccess = false;
       if(manager != null) {
         try {
@@ -82,7 +84,7 @@ public class NodeManagerStateRefreshThread implements Runnable {
   private void queryDeadNodes() {
     Set<String> backToLifeNodes = new HashSet<String>();
     for(String deadNode : this.deadNodes) {
-      IProcessManager manager = ProcessManagerFactory.processManagerFromConnectionString(deadNode);
+      IProcessManager manager = this.processManagerFactory.processManagerFromConnectionString(deadNode);
       boolean contactSuccess = false;
       if(manager != null) {
         try {

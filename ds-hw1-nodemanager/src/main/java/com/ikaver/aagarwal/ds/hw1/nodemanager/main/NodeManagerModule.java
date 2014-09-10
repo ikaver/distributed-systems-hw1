@@ -6,7 +6,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;
+import com.ikaver.aagarwal.ds.hw1.nodemanager.IProcessManagerFactory;
 import com.ikaver.aagarwal.ds.hw1.nodemanager.NodeManagerImpl;
+import com.ikaver.aagarwal.ds.hw1.nodemanager.ProcessManagerFactoryImpl;
 import com.ikaver.aagarwal.ds.hw1.nodemanager.SubscribedNodesState;
 import com.ikaver.aagarwal.ds.hw1.shared.INodeManager;
 
@@ -18,10 +20,13 @@ public class NodeManagerModule extends AbstractModule {
       .toInstance(System.in);
     ReadWriteLock stateLock = new ReentrantReadWriteLock();
     SubscribedNodesState state = new SubscribedNodesState();
+    IProcessManagerFactory factory = new ProcessManagerFactoryImpl();
     
     bind(ReadWriteLock.class).annotatedWith(Names.named("NMStateLock"))
       .toInstance(stateLock);
     bind(SubscribedNodesState.class).annotatedWith(Names.named("NMState"))
       .toInstance(state);
+    bind(IProcessManagerFactory.class).annotatedWith(Names.named("ProcessManagerFactory"))
+      .toInstance(factory);
   }
 }

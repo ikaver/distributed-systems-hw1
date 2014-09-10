@@ -3,6 +3,7 @@ package com.ikaver.aagarwal.ds.hw1.nodemanager;
 import java.rmi.RemoteException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 
 import org.apache.log4j.LogManager;
@@ -11,13 +12,14 @@ import org.apache.log4j.Logger;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.ikaver.aagarwal.ds.hw1.shared.IMigratableProcess;
-import com.ikaver.aagarwal.ds.hw1.shared.NodeState;
 import com.ikaver.aagarwal.ds.hw1.shared.INodeManager;
 import com.ikaver.aagarwal.ds.hw1.shared.IProcessManager;
+import com.ikaver.aagarwal.ds.hw1.shared.NodeState;
 import com.ikaver.aagarwal.ds.hw1.shared.helpers.MathHelper;
 
 public class NodeManagerImpl implements INodeManager {
 
+  private IProcessManagerFactory processManagerFactory;
   private ReadWriteLock stateLock;
   private SubscribedNodesState state;
   private int currentPID;
@@ -29,6 +31,7 @@ public class NodeManagerImpl implements INodeManager {
   
   @Inject
   public NodeManagerImpl(
+      @Named("ProcessManagerFactory") IProcessManagerFactory factory,
       @Named("NMState") SubscribedNodesState state, 
       @Named("NMStateLock") ReadWriteLock stateLock) {
     if(state == null) {
@@ -37,9 +40,13 @@ public class NodeManagerImpl implements INodeManager {
     if(stateLock == null) {
       throw new NullPointerException("State Lock can't be null");
     }
+    if(factory == null) {
+      throw new NullPointerException("Process manager factory can't be null");
+    }
     this.currentPID = 0;
     this.state = state;
     this.stateLock = stateLock;
+    this.processManagerFactory = factory;
   }
   
   public String addNode(String connectionString) {
@@ -63,7 +70,7 @@ public class NodeManagerImpl implements INodeManager {
     int possiblePID = this.getNextPID();
     String connectionStr = this.connectionStringForNode(nodeId);
     IProcessManager processManager 
-      = ProcessManagerFactory.processManagerFromConnectionString(connectionStr);
+      = this.processManagerFactory.processManagerFromConnectionString(connectionStr);
     ProcessLauncher launcher = new ProcessLauncher(AMOUNT_OF_RETRIES);    
     if(launcher.launch(processManager, possiblePID, className, args)) {
       pid = possiblePID;
@@ -79,9 +86,9 @@ public class NodeManagerImpl implements INodeManager {
     boolean success = false;
     IMigratableProcess packedProcess = null;
     IProcessManager srcManager
-    = ProcessManagerFactory.processManagerFromConnectionString(srcConnection);
+    = this.processManagerFactory.processManagerFromConnectionString(srcConnection);
     IProcessManager destManager
-    = ProcessManagerFactory.processManagerFromConnectionString(destConnection);
+    = this.processManagerFactory.processManagerFromConnectionString(destConnection);
     try {
       if(srcManager != null) packedProcess = srcManager.pack(pid);
     }
@@ -108,7 +115,7 @@ public class NodeManagerImpl implements INodeManager {
     
     String connectionStr = this.connectionStringForNode(nodeId);
     IProcessManager processManager 
-      = ProcessManagerFactory.processManagerFromConnectionString(connectionStr);
+      = this.processManagerFactory.processManagerFromConnectionString(connectionStr);
     boolean success = false;
     try {
       if(processManager != null) success = processManager.remove(pid);
@@ -126,8 +133,14 @@ public class NodeManagerImpl implements INodeManager {
     this.stateLock.readLock().lock();
     List<NodeState> nodes = new LinkedList<NodeState>();
     try{
-      for(String node : this.state.availableNodes()) {
-        nodes.add(new NodeState(node, this.state.getProcessList(node)));
+      Set<String> availableNodes = this.state.availableNodes();
+      if(availableNodes.size() > 0) {
+        for(String node : this.state.availableNodes()) {
+          nodes.add(new NodeState(node, this.state.getProcessList(node)));
+        }
+      }
+      else {
+        System.out.println("Currently no nodes running...");
       }
     }
     finally {
