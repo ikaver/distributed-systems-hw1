@@ -3,9 +3,9 @@ mvn clean install
 cd ..
 cd ds-hw1-processmanager
 mvn clean
-mvn package
+mvn assembly:assembly -DdescriptorId=jar-with-dependencies
 cd ..
 cd ds-hw1-nodemanager
 mvn clean
-mvn package
+mvn assembly:assembly -DdescriptorId=jar-with-dependencies
 cd ..
