@@ -12,9 +12,13 @@ public class TransactionalFileOutputStream extends OutputStream implements Seria
   
   private File file;
   private long offset;
+  
+  public TransactionalFileOutputStream(String file) throws IOException {
+    this(file, false);
+  }
 
-  public TransactionalFileOutputStream(File file, boolean append) throws IOException {
-    this.file = file;
+  public TransactionalFileOutputStream(String file, boolean append) throws IOException {
+    this.file = new File(file);
     this.offset = append ? file.length() : 0;
     FileOutputStream stream = new FileOutputStream(this.file, append);
     stream.close();

@@ -14,8 +14,8 @@ public class TransactionalFileInputStream extends InputStream implements
   private File file;
   private int offset;
 
-  public TransactionalFileInputStream(File file) {
-    this.file = file;
+  public TransactionalFileInputStream(String file) {
+    this.file = new File(file);
     this.offset = 0;
   }
 
