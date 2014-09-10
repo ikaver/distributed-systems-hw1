@@ -2,6 +2,8 @@ package com.ikaver.aagarwal.ds.hw1.processmanager;
 
 import java.rmi.RemoteException;
 
+import org.apache.log4j.Logger;
+
 import com.ikaver.aagarwal.ds.hw1.shared.IMigratableProcess;
 import com.ikaver.aagarwal.ds.hw1.shared.ProcessNotificationStateHandler;
 import com.ikaver.aagarwal.ds.hw1.shared.ProcessState;
@@ -11,6 +13,7 @@ import com.ikaver.aagarwal.ds.hw1.shared.ProcessState;
  */
 class ProcessThread extends Thread {
 
+	private final Logger logger = Logger.getLogger(ProcessThread.class);
 	private final IMigratableProcess process;
 	private final Integer pid;
 	private final ProcessNotificationStateHandler processNotificationStateHandler;
@@ -24,7 +27,12 @@ class ProcessThread extends Thread {
 
 	@Override
 	public void run() {
-		process.run();
+		try {
+			process.run();
+		} catch (Exception e) {
+			logger.error("Process threw an exception.");
+		}
+
 		try {
 			processNotificationStateHandler.updateProcessState(pid,
 					ProcessState.DEAD);
