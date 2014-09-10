@@ -24,6 +24,7 @@ public class NodeManagerController {
   private static final String KILL_COMMAND = "kill";
   private static final String LAUNCH_COMMAND = "launch";
   private static final String NODE_INFO_COMMAND = "info";
+  private static final String ADD_NODE_COMMAND = "add";
   
   private static final Logger logger 
     = LogManager.getLogger(NodeManagerController.class.getName());
@@ -70,8 +71,32 @@ public class NodeManagerController {
     else if(commandId.equals(NODE_INFO_COMMAND)) {
       this.printNodeInfoCommand(tokens);
     }
+    else if(commandId.equals(ADD_NODE_COMMAND)) {
+      this.addNodeCommand(tokens);
+    }
     else {
       this.printHelp();
+    }
+  }
+  
+  private void addNodeCommand(String [] args) {
+    if(args.length < 2 || ArrayAdditions.contains(args, null)) {
+      this.printHelp();
+      return;
+    }
+    String connectionString = args[1];
+    String nodeId = null;
+    try {
+      nodeId = this.manager.addNode(connectionString);
+    }
+    catch(RemoteException e) {
+      logger.error("Bad add node", e);
+    }
+    if(nodeId == null) {
+      System.out.printf("Failed to add node %s\n", connectionString);
+    }
+    else {
+      System.out.printf("Node %s added with node id = %s\n", connectionString, nodeId);
     }
   }
   
@@ -196,5 +221,6 @@ public class NodeManagerController {
     System.out.printf("\t%s PROCESS_ID\n", KILL_COMMAND);
     System.out.printf("\t%s CLASS_NAME ARGS\n", LAUNCH_COMMAND);
     System.out.printf("\t%s PROCESS_ID SOURCE_NODE DESTINATION_NODE\n", MIGRATE_COMMAND);
+    System.out.printf("\t%s CONNECTION_STRING\n", ADD_NODE_COMMAND);
   }
 }

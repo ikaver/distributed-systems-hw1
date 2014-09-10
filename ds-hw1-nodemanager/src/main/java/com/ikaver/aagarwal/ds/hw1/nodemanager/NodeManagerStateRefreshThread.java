@@ -1,6 +1,7 @@
 package com.ikaver.aagarwal.ds.hw1.nodemanager;
 
 import java.rmi.RemoteException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -17,6 +18,7 @@ import com.ikaver.aagarwal.ds.hw1.shared.IProcessManager;
 public class NodeManagerStateRefreshThread implements Runnable {
 
   private ReadWriteLock stateLock;
+  private Set<String> deadNodes;
   private SubscribedNodesState state;
 
   private static final Logger logger 
@@ -28,10 +30,16 @@ public class NodeManagerStateRefreshThread implements Runnable {
       @Named("NMStateLock") ReadWriteLock stateLock) {
     this.state = state;
     this.stateLock = stateLock;
+    this.deadNodes = new HashSet<String>();
   }
 
   public void run(){
-    Set<String> unresponsiveNodes = new HashSet<String>();
+    this.queryAvailableNodes();
+    this.queryDeadNodes();
+  }
+  
+  private void queryAvailableNodes() {
+    HashMap<String,String> unresponsiveNodes = new HashMap<String, String>();
     Set<String> availableNodes = null;
 
     this.stateLock.readLock().lock();
@@ -65,10 +73,38 @@ public class NodeManagerStateRefreshThread implements Runnable {
         }
       }
       if(!contactSuccess) {
-        unresponsiveNodes.add(nodeId);
+        unresponsiveNodes.put(nodeId, connectionForId);
       }
     }
     this.removeUnresponsiveNodes(unresponsiveNodes);
+  }
+  
+  private void queryDeadNodes() {
+    for(String deadNode : this.deadNodes) {
+      
+      IProcessManager manager = ProcessManagerFactory.processManagerFromConnectionString(deadNode);
+      boolean contactSuccess = false;
+      if(manager != null) {
+        try {
+          manager.getState();
+          contactSuccess = true;
+        }
+        catch(RemoteException e) {
+          logger.error("Bad get state", e);
+        }
+      }
+      if(contactSuccess) {
+        this.stateLock.writeLock().lock();
+        try {
+          String newId = this.state.addNode(deadNode);
+          this.deadNodes.remove(deadNode);
+          System.out.printf("Node %s is back alive with id %s\n", deadNode, newId);
+        }
+        finally {
+          this.stateLock.writeLock().unlock();
+        }
+      }
+    }
   }
   
   private void updateNodeState(String nodeId, NodeState nodeState) {
@@ -86,16 +122,21 @@ public class NodeManagerStateRefreshThread implements Runnable {
     }
   }
   
-  private void removeUnresponsiveNodes(Set<String> unresponsiveNodes) {
-    for(String unresponsive : unresponsiveNodes) {
+  private void removeUnresponsiveNodes(HashMap<String,String> unresponsiveNodes) {
+    for(String unresponsive : unresponsiveNodes.keySet()) {
+      String connectionStr = unresponsiveNodes.get(unresponsive);      
+      System.out.printf("Node %s with id %s is unresponsive, disconnecting...\n",
+          connectionStr, unresponsive);  
+      this.deadNodes.add(connectionStr);
+
       this.stateLock.writeLock().lock();
       try {
-        System.out.printf("Node %s is unresponsive, disconnecting...\n", unresponsive);        
         this.state.removeNode(unresponsive);
       }
       finally {
         this.stateLock.writeLock().unlock();
       }
+
     }   
   }
 

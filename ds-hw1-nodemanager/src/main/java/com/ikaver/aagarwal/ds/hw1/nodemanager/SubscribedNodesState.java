@@ -8,6 +8,7 @@ import java.util.Set;
 
 public class SubscribedNodesState {
 
+  private Set<String> connectionStrings;
   private HashMap<String, String> nodeIdToConnectionStr;
   private HashMap<String, List<Integer>> nodeIdToPid;
   private HashMap<Integer, String> pidToNodeId;
@@ -16,6 +17,7 @@ public class SubscribedNodesState {
     this.nodeIdToConnectionStr = new HashMap<String, String>();
     this.nodeIdToPid = new HashMap<String, List<Integer>>();
     this.pidToNodeId = new HashMap<Integer, String>();
+    this.connectionStrings = new HashSet<String>();
   }
   
   public int nodeCount() {
@@ -34,11 +36,22 @@ public class SubscribedNodesState {
     return this.pidToNodeId.get(pid);
   }
   
-  public void addNode(String nodeId, String connectionStr) {
-    this.nodeIdToConnectionStr.put(nodeId, connectionStr);
+  /**
+   * Adds a new node to the available nodes set, using the given connection string.
+   * @param connectionStr the connection string for the node
+   * @return the node id for the given connection string.
+   */
+  public String addNode(String connectionStr) {
+    String nodeId = null;
+    if(!this.connectionStrings.contains(connectionStr)) {
+      nodeId = ""+this.pidToNodeId.size();
+      this.nodeIdToConnectionStr.put(nodeId, connectionStr);
+    }
+    return nodeId;
   }
   
   public void removeNode(String nodeId) {
+    this.connectionStrings.remove(this.nodeIdToConnectionStr.get(nodeId));
     this.nodeIdToConnectionStr.remove(nodeId);
     this.nodeIdToPid.remove(nodeId);
     Set<Integer> nodePID = new HashSet<Integer>();

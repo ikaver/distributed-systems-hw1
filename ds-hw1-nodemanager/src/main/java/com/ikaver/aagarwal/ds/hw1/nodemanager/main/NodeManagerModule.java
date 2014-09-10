@@ -18,8 +18,6 @@ public class NodeManagerModule extends AbstractModule {
       .toInstance(System.in);
     ReadWriteLock stateLock = new ReentrantReadWriteLock();
     SubscribedNodesState state = new SubscribedNodesState();
-    state.addNode("1", "localhost:2000");
-    state.addNode("2", "localhost:3000");
     
     bind(ReadWriteLock.class).annotatedWith(Names.named("NMStateLock"))
       .toInstance(stateLock);
