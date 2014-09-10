@@ -12,12 +12,14 @@ public class SubscribedNodesState {
   private HashMap<String, String> nodeIdToConnectionStr;
   private HashMap<String, List<Integer>> nodeIdToPid;
   private HashMap<Integer, String> pidToNodeId;
+  private int currentId;
   
   public SubscribedNodesState() {
     this.nodeIdToConnectionStr = new HashMap<String, String>();
     this.nodeIdToPid = new HashMap<String, List<Integer>>();
     this.pidToNodeId = new HashMap<Integer, String>();
     this.connectionStrings = new HashSet<String>();
+    this.currentId = 0;
   }
   
   public int nodeCount() {
@@ -44,8 +46,11 @@ public class SubscribedNodesState {
   public String addNode(String connectionStr) {
     String nodeId = null;
     if(!this.connectionStrings.contains(connectionStr)) {
-      nodeId = ""+this.pidToNodeId.size();
+      ++this.currentId;
+      nodeId = ""+this.currentId;
       this.nodeIdToConnectionStr.put(nodeId, connectionStr);
+      this.connectionStrings.add(connectionStr);
+      this.nodeIdToPid.put(nodeId, new LinkedList<Integer>());
     }
     return nodeId;
   }
@@ -84,7 +89,8 @@ public class SubscribedNodesState {
   }
   
   public List<Integer> getProcessList(String node) {
-    return new LinkedList<Integer>(this.nodeIdToPid.get(node));
+    List<Integer> processList = this.nodeIdToPid.get(node);
+    return processList == null ? null : new LinkedList<Integer>(processList);
   }
   
   public void setProcessList(String node, List<Integer> processList) {

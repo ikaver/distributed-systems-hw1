@@ -32,8 +32,7 @@ public class ProcessLauncher {
       }
     }
     if(!launched){
-      logger.error(String.format("Unable to launch process %s in node %s", 
-          className, pid));
+      logger.error(String.format("Unable to launch process %s", className));
     }
     return launched;
   }
