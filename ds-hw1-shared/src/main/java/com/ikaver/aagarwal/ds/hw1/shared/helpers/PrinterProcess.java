@@ -8,34 +8,38 @@ import com.ikaver.aagarwal.ds.hw1.shared.IMigratableProcess;
  */
 public class PrinterProcess implements IMigratableProcess {
 
-	private static final long serialVersionUID = 1L;
-	private final long randomID;
-	private volatile boolean suspending = false;
-	private int NUM_TRIES = 100000;
+  private static final long serialVersionUID = 1L;
+  private final long randomID;
+  private volatile boolean suspending = false;
+  private int amountOfPrints;
 
-	public PrinterProcess(String[] args) {
-		System.out.println("Called with args" + args.toString());
-		randomID = System.currentTimeMillis();
-	}
+  private int TOTAL_AMOUNT_OF_PRINTS = 100000;
+  private int WAIT_TIME_PER_PRINT_IN_MS = 1000;
 
-	public void run() {
-		System.out.println("The process is running." + randomID);
-		while( NUM_TRIES > 0 && !suspending) {
-			System.out.println("Grepping now!" + "with randomID" + ":" + randomID +
-					".This is the ith invocation:" + NUM_TRIES);
-			NUM_TRIES--;
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-			}
-		}
-		
-		suspending = false;
-	}
+  public PrinterProcess(String[] args) {
+    amountOfPrints = TOTAL_AMOUNT_OF_PRINTS;
+    System.out.println("Called with args" + args.toString());
+    randomID = System.currentTimeMillis();
+  }
 
-	public void suspend() {
-		suspending = true;
-        while (suspending);
-		System.out.println("The process is suspended.");		
-	}
+  public void run() {
+    System.out.println("The process is running." + randomID);
+    while( amountOfPrints > 0 && !suspending) {
+      System.out.println("Grepping now!" + "with randomID" + ":" + randomID +
+          ".This is the ith invocation:" + amountOfPrints);
+      amountOfPrints--;
+      try {
+        Thread.sleep(WAIT_TIME_PER_PRINT_IN_MS);
+      } catch (InterruptedException e) {
+      }
+    }
+
+    suspending = false;
+  }
+
+  public void suspend() {
+    suspending = true;
+    while (suspending);
+    System.out.println("The process is suspended.");		
+  }
 }
