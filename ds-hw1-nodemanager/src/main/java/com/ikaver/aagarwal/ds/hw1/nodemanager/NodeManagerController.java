@@ -22,7 +22,7 @@ import com.ikaver.aagarwal.ds.hw1.shared.INodeManager;
 public class NodeManagerController {
   
   private static final String MIGRATE_COMMAND = "mig";
-  private static final String KILL_COMMAND = "kill";
+  private static final String TERMINATE_COMMAND = "terminate";
   private static final String LAUNCH_COMMAND = "launch";
   private static final String PROCESS_RUNNER_INFO_COMMAND = "ps";
   private static final String ADD_PROCESS_RUNNER_COMMAND = "add";
@@ -63,7 +63,7 @@ public class NodeManagerController {
     if(commandId.equals(MIGRATE_COMMAND)) {
       this.migrateCommand(tokens);
     }
-    else if(commandId.equals(KILL_COMMAND)) {
+    else if(commandId.equals(TERMINATE_COMMAND)) {
       this.killCommand(tokens);
     }
     else if(commandId.equals(LAUNCH_COMMAND)) {
@@ -226,7 +226,7 @@ public class NodeManagerController {
   
   private void printHelp() {
     System.out.println("Invalid command. Use: ");
-    System.out.printf("\t%s PROCESS_ID\n", KILL_COMMAND);
+    System.out.printf("\t%s PROCESS_ID\n", TERMINATE_COMMAND);
     System.out.printf("\t%s CLASS_NAME ARGS\n", LAUNCH_COMMAND);
     System.out.printf("\t%s PROCESS_ID SOURCE_PROCESS_RUNNER DESTINATION_PROCESS_RUNNER\n", MIGRATE_COMMAND);
     System.out.printf("\t%s CONNECTION_STRING\n", ADD_PROCESS_RUNNER_COMMAND);
