@@ -50,22 +50,23 @@ public class CumulativeSumProcess implements IMigratableProcess {
 		try {
 			while (!suspending) {
 				String line = in.readLine();
-				if (line != null) {
-					int n = Integer.valueOf(line);
-					cumulativeSum = cumulativeSum + n;
-					out.print(String.format(
-							"Cumulative Sum:%d till position:%d\n",
-							cumulativeSum, pos));
-					System.out.println(String.format(
-							"Cumulative Sum:%d till position:%d\n",
-							cumulativeSum, pos));
-					try {
-						Thread.sleep(100);
-					} catch (InterruptedException e) {
+				
+				if(line == null) break;
+				
+				int n = Integer.valueOf(line);
+				cumulativeSum = cumulativeSum + n;
+				out.print(String.format(
+						"Cumulative Sum:%d till position:%d\n",
+						cumulativeSum, pos));
+				System.out.println(String.format(
+						"Cumulative Sum:%d till position:%d\n",
+						cumulativeSum, pos));
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
 
-					}
-					pos++;
 				}
+				pos++;
 			}
 		} catch (EOFException e) {
 
