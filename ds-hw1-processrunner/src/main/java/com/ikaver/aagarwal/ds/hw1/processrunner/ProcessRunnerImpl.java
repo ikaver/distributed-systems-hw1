@@ -204,7 +204,7 @@ public class ProcessRunnerImpl extends UnicastRemoteObject
 						pid));
 			} else {
 				logger.info(String
-						.format("Process with pid: %d is already dead., pid"));
+						.format("Process with pid: %d is already dead.", pid));
 			}
 		}
 	}
