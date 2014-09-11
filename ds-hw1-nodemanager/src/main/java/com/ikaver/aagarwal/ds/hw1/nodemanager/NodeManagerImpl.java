@@ -49,13 +49,28 @@ public class NodeManagerImpl implements INodeManager {
   }
 
   public String addProcessRunner(String connectionString) {
-    this.stateLock.writeLock().lock();
     String id = null;
+   
+    boolean communicationSuccess = true;
+    IProcessRunner processManager 
+    = this.processRunnerFactory.processRunnerFromConnectionStr(connectionString);
     try {
-      id = this.state.addProcessRunner(connectionString);
+      if(processManager != null) processManager.start();
     }
-    finally {
-      this.stateLock.writeLock().unlock();
+    catch(RemoteException e) {
+      logger.error("Couldn't communicate with new node", e);
+      communicationSuccess = false;
+    }
+    
+    //add process runner if we could communicate with it successfully.
+    if(communicationSuccess) {
+      this.stateLock.writeLock().lock();
+      try{
+        id = this.state.addProcessRunner(connectionString);
+      }
+      finally {
+        this.stateLock.writeLock().unlock();
+      }
     }
     return id;
   }

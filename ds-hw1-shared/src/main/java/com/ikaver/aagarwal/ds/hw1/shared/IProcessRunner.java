@@ -5,6 +5,15 @@ import java.rmi.RemoteException;
 
 
 public interface IProcessRunner extends Remote {
+  
+  /**
+   * @description start() is called as soon as the user asks for this process 
+   * runner to be added to the Node Manager. This should clear the state of 
+   * the process runner before returning.
+   * @throws RemoteException
+   */
+  public void start() throws RemoteException;
+  
   /**
    * @description Returns the current state of the node, indicating which 
    * processes are currently running.

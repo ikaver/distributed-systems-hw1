@@ -5,7 +5,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -38,14 +40,14 @@ public class ProcessRunnerImpl extends UnicastRemoteObject
 		// Empty constructor for now.. Will add more stuff if needed.
 	}
 
-	/**
-	 * The implemention should register/bind the process manager task to
-	 * necessary port.
-	 */
-	public void run() {
+	public void start() {
+	  Set<Integer> pids = new HashSet<Integer>(pidThreadMap.keySet());
+	  for (Integer pid: pids) {
+	    remove(pid);
+	  }
 	}
 
-	public ProcessRunnerState getState() {
+  public synchronized ProcessRunnerState getState() {
 		List<Integer> pids = new ArrayList<Integer>(pidProcessMap.keySet());
 		// We are passing a random node id to the server id. The server may have a 
 		// different naming convention for this slave node and hence 
