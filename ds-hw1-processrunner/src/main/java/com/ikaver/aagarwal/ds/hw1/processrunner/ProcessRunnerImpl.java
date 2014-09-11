@@ -22,17 +22,23 @@ import com.ikaver.aagarwal.ds.hw1.shared.ProcessNotificationStateHandler;
 import com.ikaver.aagarwal.ds.hw1.shared.ProcessState;
 import com.ikaver.aagarwal.ds.hw1.processrunner.ProcessThread;
 
+/**
+ * Describes a process runner, an entity capable of launching, packing, 
+ * unpacking and terminating processes, as well as reporting the state
+ * of the processes that its running periodically.
+ */
 @Singleton
 public class ProcessRunnerImpl extends UnicastRemoteObject 
     implements IProcessRunner, ProcessNotificationStateHandler {
 
   private static final long serialVersionUID = -8398758641188170913L;
 
-	private final ConcurrentHashMap<Integer, Thread> pidThreadMap = new ConcurrentHashMap<Integer, Thread>();
-	private final ConcurrentHashMap<Integer, IMigratableProcess> pidProcessMap = new ConcurrentHashMap<Integer, IMigratableProcess>();
+	private final ConcurrentHashMap<Integer, Thread> pidThreadMap 
+	= new ConcurrentHashMap<Integer, Thread>();
+	private final ConcurrentHashMap<Integer, IMigratableProcess> pidProcessMap 
+	= new ConcurrentHashMap<Integer, IMigratableProcess>();
 
 	private final Logger logger = Logger.getLogger(ProcessRunnerImpl.class);
-	
 	private final String PROCESS_MANAGER_ID = UUID.randomUUID().toString();
 
 	@Inject
@@ -40,13 +46,25 @@ public class ProcessRunnerImpl extends UnicastRemoteObject
 		// Empty constructor for now.. Will add more stuff if needed.
 	}
 
+  /**
+   * start() is called as soon as the user asks for this process 
+   * runner to be added to the Node Manager. This should clear the state of 
+   * the process runner before returning.
+   * @throws RemoteException
+   */
 	public void start() {
 	  Set<Integer> pids = new HashSet<Integer>(pidThreadMap.keySet());
 	  for (Integer pid: pids) {
 	    remove(pid);
 	  }
 	}
-
+	
+  /**
+   * Returns the current state of the node, indicating which 
+   * processes are currently running.
+   * @return The current node state.
+   * @see ProcessRunnerState
+   */
   public synchronized ProcessRunnerState getState() {
 		List<Integer> pids = new ArrayList<Integer>(pidProcessMap.keySet());
 		// We are passing a random node id to the server id. The server may have a 
@@ -55,7 +73,13 @@ public class ProcessRunnerImpl extends UnicastRemoteObject
 		ProcessRunnerState state = new ProcessRunnerState(PROCESS_MANAGER_ID, pids);
 		return state;
 	}
-
+  /**
+   * Suspends the migratable process with the given pid, and afterwards returns 
+   * a serialized version of the suspended process.
+   * @param pid The process pid
+   * @return A serialized version of the suspended process with the given pid.
+   * @see IMigratableProcess
+   */
 	public synchronized IMigratableProcess pack(int pid) {
 		IMigratableProcess process = pidProcessMap.get(pid);
 		if (process != null) {
@@ -67,6 +91,13 @@ public class ProcessRunnerImpl extends UnicastRemoteObject
 		return process;
 	}
 
+  /**
+   * Deserializes and runs the migratable process with the given pid on the 
+   * current node.
+   * @param pid The process pid
+   * @param serializedProcess A serialized version of the process that represents
+   * its current state.
+   */
 	public boolean unpack(int pid, IMigratableProcess process) {
 		if (process != null) {
 			startProcess(pid, process);
@@ -77,6 +108,12 @@ public class ProcessRunnerImpl extends UnicastRemoteObject
 		}
 	}
 
+  /**
+   * Terminates the migratable process with the given pid, if its currently 
+   * running on this node.
+   * @param pid The process pid
+   * @return true iff a process with the given pid was successfully terminated.
+   */
 	public boolean remove(int pid) {
 		// Synchronzied on this object since we don't want to fuck up the state of the
 		// data structure containing the process information.
@@ -93,6 +130,15 @@ public class ProcessRunnerImpl extends UnicastRemoteObject
 		}
 	}
 
+  /**
+   *  Launches a migratable process with the given pid, serialized
+   * class definition and constructor arguments on this node. 
+   * @param pid The id that will be assigned to this process
+   * @param classDefinition The serialized class definition of the migratable
+   * process
+   * @param args The arguments with which the constructor will be invoked
+   * @return true iff the process was launched successfully
+   */
 	@SuppressWarnings("unchecked")
 	public boolean launch(int pid, String classDefinition, String[] args) {
 		try {
@@ -130,6 +176,11 @@ public class ProcessRunnerImpl extends UnicastRemoteObject
 		return true;
 	}
 
+	/**
+	 * Starts the process with the given pid
+	 * @param pid the pid of the process
+	 * @param migratableProcess process to start
+	 */
 	private void startProcess(int pid, IMigratableProcess migratableProcess) {
 		// Running the new process now.
 		ProcessThread thread = new ProcessThread(pid, migratableProcess,
@@ -139,6 +190,9 @@ public class ProcessRunnerImpl extends UnicastRemoteObject
 		thread.start();
 	}
 
+	/**
+	 * Updates the state of the process with given pid
+	 */
 	public void updateProcessState(int pid, ProcessState state) {
 		if (state == ProcessState.DEAD) {
 			// pid may have already been removed. However, this doesn't quite
