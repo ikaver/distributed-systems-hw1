@@ -3,11 +3,11 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.ikaver.aagarwal.</groupId>
-	<artifactId>ds-hw1-processmanager</artifactId>
+	<artifactId>ds-hw1-processrunner</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>ds-hw1-processmanager</name>
+	<name>ds-hw1-processrunner</name>
 	<url>http://maven.apache.org</url>
 
 	<properties>
@@ -38,7 +38,7 @@
 							<argument>-classpath</argument>
 							<classpath />
 							<!-- Add main class here -->
-							<argument>com.ikaver.aagarwal.ds.hw1.processmanager.ProcessManagerEntryPoint</argument>
+							<argument>com.ikaver.aagarwal.ds.hw1.processrunner.ProcessRunnerEntryPoint</argument>
 							<!-- Add custom program parameters here (declared in properties) -->
 							<argument>${portNumber}</argument>
 						</arguments>
@@ -59,7 +59,7 @@
 									<source>
 										<includes>
 											<!-- Add RMI classes here -->
-											<include>**/ProcessManagerImpl.class</include>
+											<include>**/ProcessRunnerImpl.class</include>
 										</includes>
 										<excludes>
 										</excludes>
@@ -84,7 +84,7 @@
 					<configuration>
 						<archive>
 							<manifest>
-								<mainClass>com.ikaver.aagarwal.ds.hw1.processmanager.ProcessManagerEntryPoint</mainClass>
+								<mainClass>com.ikaver.aagarwal.ds.hw1.processrunner.ProcessRunnerEntryPoint</mainClass>
 							</manifest>
 						</archive>
 						<descriptorRefs>

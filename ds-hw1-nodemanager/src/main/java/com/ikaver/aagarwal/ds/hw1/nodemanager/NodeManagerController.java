@@ -3,6 +3,7 @@ package com.ikaver.aagarwal.ds.hw1.nodemanager;
 import java.io.InputStream;
 import java.rmi.RemoteException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 import org.apache.log4j.LogManager;
@@ -10,7 +11,7 @@ import org.apache.log4j.Logger;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import com.ikaver.aagarwal.ds.hw1.shared.NodeState;
+import com.ikaver.aagarwal.ds.hw1.shared.ProcessRunnerState;
 import com.ikaver.aagarwal.ds.hw1.shared.helpers.ArrayAdditions;
 import com.ikaver.aagarwal.ds.hw1.shared.INodeManager;
 
@@ -23,8 +24,8 @@ public class NodeManagerController {
   private static final String MIGRATE_COMMAND = "mig";
   private static final String KILL_COMMAND = "kill";
   private static final String LAUNCH_COMMAND = "launch";
-  private static final String NODE_INFO_COMMAND = "info";
-  private static final String ADD_NODE_COMMAND = "add";
+  private static final String PROCESS_RUNNER_INFO_COMMAND = "ps";
+  private static final String ADD_PROCESS_RUNNER_COMMAND = "add";
   
   private static final Logger logger 
     = LogManager.getLogger(NodeManagerController.class.getName());
@@ -68,35 +69,35 @@ public class NodeManagerController {
     else if(commandId.equals(LAUNCH_COMMAND)) {
       this.launchCommand(tokens);
     }
-    else if(commandId.equals(NODE_INFO_COMMAND)) {
-      this.printNodeInfoCommand(tokens);
+    else if(commandId.equals(PROCESS_RUNNER_INFO_COMMAND)) {
+      this.printProcessRunnerState(tokens);
     }
-    else if(commandId.equals(ADD_NODE_COMMAND)) {
-      this.addNodeCommand(tokens);
+    else if(commandId.equals(ADD_PROCESS_RUNNER_COMMAND)) {
+      this.addProcessRunnerCommand(tokens);
     }
     else {
       this.printHelp();
     }
   }
   
-  private void addNodeCommand(String [] args) {
+  private void addProcessRunnerCommand(String [] args) {
     if(args.length < 2 || ArrayAdditions.contains(args, null)) {
       this.printHelp();
       return;
     }
     String connectionString = args[1];
-    String nodeId = null;
+    String processRunnerId = null;
     try {
-      nodeId = this.manager.addNode(connectionString);
+      processRunnerId = this.manager.addProcessRunner(connectionString);
     }
     catch(RemoteException e) {
-      logger.error("Bad add node", e);
+      logger.error("Bad add process runner", e);
     }
-    if(nodeId == null) {
-      System.out.printf("Failed to add node %s\n", connectionString);
+    if(processRunnerId == null) {
+      System.out.printf("Failed to add process runner %s\n", connectionString);
     }
     else {
-      System.out.printf("Node %s added with node id = %s\n", connectionString, nodeId);
+      System.out.printf("Process runner %s added with id = %s\n", connectionString, processRunnerId);
     }
   }
   
@@ -104,7 +105,7 @@ public class NodeManagerController {
    * Executes a migrate command with the given arguments. If the arguments are 
    * invalid no action occurs.
    * @param args Arguments for the migrate command. 
-   *    [ "m", PROCESS_ID, SOURCE_NODE, DESTINATION_NODE]
+   *    [ "mig", PROCESS_ID, SRC_PROCESS_RUNNER, DEST_PROCESS_RUNNER]
    */
   private void migrateCommand(String [] args){
     if(args.length < 4 || ArrayAdditions.contains(args, null)) {
@@ -113,11 +114,11 @@ public class NodeManagerController {
     }
     try {
       int pid = Integer.parseInt(args[1]);
-      String srcNode = args[2];
-      String destNode = args[3];
+      String srcProcessRunner = args[2];
+      String destProcessRunner = args[3];
       boolean success = false;
       try {
-        success = this.manager.migrate(pid, srcNode, destNode);
+        success = this.manager.migrate(pid, srcProcessRunner, destProcessRunner);
       }
       catch(RemoteException e) {
         logger.error("Migrate failed!", e);
@@ -125,11 +126,11 @@ public class NodeManagerController {
       }
       if(success) {
         System.out.printf("Process %d migrated from %s to %s\n", 
-            pid, srcNode, destNode);
+            pid, srcProcessRunner, destProcessRunner);
       }
       else {
         System.out.printf("Couldn't migrate %d from %s to %s\n",
-            pid, srcNode, destNode);
+            pid, srcProcessRunner, destProcessRunner);
       }
     }
     catch(NumberFormatException e) {
@@ -202,17 +203,24 @@ public class NodeManagerController {
   }
   
   /*
-   * Prints the node state for all of the current nodes
+   * Prints the process runner state for all of the current process runners
    */
-  private void printNodeInfoCommand(String [] args) {
+  private void printProcessRunnerState(String [] args) {
     try{
-      for(NodeState node : this.manager.getNodeInformation()) {
-        System.out.printf("Node %s : %s\n", node.getNodeId(),
-            node.getRunningProcesses());
+      List<ProcessRunnerState> state = this.manager.getProcessRunnerState();
+      if(state.size() > 0) {
+        for(ProcessRunnerState runner : state) {
+          System.out.printf("Process runner %s : %s\n", runner.getProcessRunnerId(),
+              runner.getRunningProcesses());
+        }
       }
+      else {
+        System.out.println("No process runners available...");
+      }
+      
     }
     catch(RemoteException e){
-      logger.error("Node information failed!", e);
+      logger.error("Process runner get state failed!", e);
     }
   }
   
@@ -220,7 +228,7 @@ public class NodeManagerController {
     System.out.println("Invalid command. Use: ");
     System.out.printf("\t%s PROCESS_ID\n", KILL_COMMAND);
     System.out.printf("\t%s CLASS_NAME ARGS\n", LAUNCH_COMMAND);
-    System.out.printf("\t%s PROCESS_ID SOURCE_NODE DESTINATION_NODE\n", MIGRATE_COMMAND);
-    System.out.printf("\t%s CONNECTION_STRING\n", ADD_NODE_COMMAND);
+    System.out.printf("\t%s PROCESS_ID SOURCE_PROCESS_RUNNER DESTINATION_PROCESS_RUNNER\n", MIGRATE_COMMAND);
+    System.out.printf("\t%s CONNECTION_STRING\n", ADD_PROCESS_RUNNER_COMMAND);
   }
 }

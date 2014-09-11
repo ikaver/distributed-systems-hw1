@@ -1,4 +1,4 @@
-package com.ikaver.aagarwal.ds.hw1.processmanager;
+package com.ikaver.aagarwal.ds.hw1.processrunner;
 
 import java.rmi.RemoteException;
 

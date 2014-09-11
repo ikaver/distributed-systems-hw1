@@ -1,4 +1,4 @@
-package com.ikaver.aagarwal.ds.hw1.processmanager;
+package com.ikaver.aagarwal.ds.hw1.processrunner;
 
 import java.net.MalformedURLException;
 import java.rmi.Naming;
@@ -6,26 +6,27 @@ import java.rmi.RemoteException;
 
 import org.apache.log4j.Logger;
 
-import com.ikaver.aagarwal.ds.hw1.shared.IProcessManager;
+import com.ikaver.aagarwal.ds.hw1.shared.IProcessRunner;
 
-public class ProcessManagerEntryPoint {
+public class ProcessRunnerEntryPoint {
 
-	private static final Logger logger = Logger.getLogger(ProcessManagerEntryPoint.class);
+	private static final Logger logger = Logger.getLogger(ProcessRunnerEntryPoint.class);
 
 	public static void main(String args[]) {
 
-		IProcessManager manager = null;
-		Integer port;
+		IProcessRunner manager = null;
+		Integer port = -1;
 		try {
 			port = Integer.valueOf(args[0]);
 		} catch(NumberFormatException e) {
-			port = 2000;
+			System.out.println("Usage: java -jar processRunner.jar <PORT_NUMBER>");
+			System.exit(1);
 		}
 
 		logger.info(String.format("Running the process manager @%d", port));
 
 		try {
-			manager = new ProcessManagerImpl();
+			manager = new ProcessRunnerImpl();
 		} catch (RemoteException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();

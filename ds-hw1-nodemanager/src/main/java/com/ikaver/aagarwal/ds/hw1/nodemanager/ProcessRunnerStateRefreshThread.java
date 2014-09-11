@@ -11,23 +11,23 @@ import org.apache.log4j.Logger;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import com.ikaver.aagarwal.ds.hw1.shared.IProcessManager;
-import com.ikaver.aagarwal.ds.hw1.shared.NodeState;
+import com.ikaver.aagarwal.ds.hw1.shared.IProcessRunner;
+import com.ikaver.aagarwal.ds.hw1.shared.ProcessRunnerState;
 
-public class NodeManagerStateRefreshThread implements Runnable {
+public class ProcessRunnerStateRefreshThread implements Runnable {
 
-  private IProcessManagerFactory processManagerFactory;
+  private IProcessRunnerFactory processManagerFactory;
   private ReadWriteLock stateLock;
   private Set<String> deadNodes;
-  private SubscribedNodesState state;
+  private SubscribedProcessRunnersState state;
 
   private static final Logger logger 
-  = LogManager.getLogger(NodeManagerStateRefreshThread.class.getName());
+  = LogManager.getLogger(ProcessRunnerStateRefreshThread.class.getName());
 
   @Inject
-  public NodeManagerStateRefreshThread(
-      @Named("ProcessManagerFactory") IProcessManagerFactory factory,
-      @Named("NMState") SubscribedNodesState state, 
+  public ProcessRunnerStateRefreshThread(
+      @Named("ProcessManagerFactory") IProcessRunnerFactory factory,
+      @Named("NMState") SubscribedProcessRunnersState state, 
       @Named("NMStateLock") ReadWriteLock stateLock) {
     this.processManagerFactory = factory;
     this.state = state;
@@ -36,38 +36,38 @@ public class NodeManagerStateRefreshThread implements Runnable {
   }
 
   public void run(){
-    this.queryAvailableNodes();
-    this.queryDeadNodes();
+    this.queryAvailableProcessRunners();
+    this.queryDeadProcessRunners();
   }
   
-  private void queryAvailableNodes() {
+  private void queryAvailableProcessRunners() {
     HashMap<String,String> unresponsiveNodes = new HashMap<String, String>();
     Set<String> availableNodes = null;
 
     this.stateLock.readLock().lock();
     try{
-      availableNodes = this.state.availableNodes();
+      availableNodes = this.state.availableProcessRunners();
     }
     finally {
       this.stateLock.readLock().unlock();
     }
     
-    for(String nodeId : availableNodes) {
+    for(String processRunnerId : availableNodes) {
       
       String connectionForId = null;
       this.stateLock.readLock().lock();
       try {
-        connectionForId = this.state.connectionStringForNode(nodeId);
+        connectionForId = this.state.connectionStringForProcessRunner(processRunnerId);
       }
       finally {
         this.stateLock.readLock().unlock();
       }
       
-      IProcessManager manager = this.processManagerFactory.processManagerFromConnectionString(connectionForId);
+      IProcessRunner manager = this.processManagerFactory.processRunnerFromConnectionStr(connectionForId);
       boolean contactSuccess = false;
       if(manager != null) {
         try {
-          this.updateNodeState(nodeId, manager.getState());
+          this.updateNodeState(processRunnerId, manager.getState());
           contactSuccess = true;
         }
         catch(RemoteException e) {
@@ -75,16 +75,16 @@ public class NodeManagerStateRefreshThread implements Runnable {
         }
       }
       if(!contactSuccess) {
-        unresponsiveNodes.put(nodeId, connectionForId);
+        unresponsiveNodes.put(processRunnerId, connectionForId);
       }
     }
     this.removeUnresponsiveNodes(unresponsiveNodes);
   }
   
-  private void queryDeadNodes() {
+  private void queryDeadProcessRunners() {
     Set<String> backToLifeNodes = new HashSet<String>();
-    for(String deadNode : this.deadNodes) {
-      IProcessManager manager = this.processManagerFactory.processManagerFromConnectionString(deadNode);
+    for(String deadProcessRunner : this.deadNodes) {
+      IProcessRunner manager = this.processManagerFactory.processRunnerFromConnectionStr(deadProcessRunner);
       boolean contactSuccess = false;
       if(manager != null) {
         try {
@@ -96,9 +96,9 @@ public class NodeManagerStateRefreshThread implements Runnable {
       if(contactSuccess) {
         this.stateLock.writeLock().lock();
         try {
-          String newId = this.state.addNode(deadNode);
-          backToLifeNodes.add(deadNode);
-          System.out.printf("Node %s is back alive with id %s\n", deadNode, newId);
+          String newId = this.state.addProcessRunner(deadProcessRunner);
+          backToLifeNodes.add(deadProcessRunner);
+          System.out.printf("Node %s is back alive with id %s\n", deadProcessRunner, newId);
         }
         catch(Exception e) {
           logger.error("Bad node revive", e);
@@ -111,14 +111,14 @@ public class NodeManagerStateRefreshThread implements Runnable {
     this.deadNodes.removeAll(backToLifeNodes);
   }
   
-  private void updateNodeState(String nodeId, NodeState nodeState) {
+  private void updateNodeState(String processRunnerId, ProcessRunnerState nodeState) {
     this.stateLock.writeLock().lock();
     try {
       if(nodeState != null) {
-        this.state.setProcessList(nodeId, nodeState.getRunningProcesses());
+        this.state.setProcessList(processRunnerId, nodeState.getRunningProcesses());
       }
       else {
-        this.state.clearProcessList(nodeId);
+        this.state.clearProcessList(processRunnerId);
       }
     }
     catch(Exception e) {
@@ -129,16 +129,16 @@ public class NodeManagerStateRefreshThread implements Runnable {
     }
   }
   
-  private void removeUnresponsiveNodes(HashMap<String,String> unresponsiveNodes) {
-    for(String unresponsive : unresponsiveNodes.keySet()) {
-      String connectionStr = unresponsiveNodes.get(unresponsive);      
+  private void removeUnresponsiveNodes(HashMap<String,String> unresponsiveProcessRunners) {
+    for(String unresponsive : unresponsiveProcessRunners.keySet()) {
+      String connectionStr = unresponsiveProcessRunners.get(unresponsive);      
       System.out.printf("Node %s with id %s is unresponsive, disconnecting...\n",
           connectionStr, unresponsive);  
       this.deadNodes.add(connectionStr);
 
       this.stateLock.writeLock().lock();
       try {
-        this.state.removeNode(unresponsive);
+        this.state.removeProcessRunner(unresponsive);
       }
       catch(Exception e) {
         logger.error("Bad node remove", e);

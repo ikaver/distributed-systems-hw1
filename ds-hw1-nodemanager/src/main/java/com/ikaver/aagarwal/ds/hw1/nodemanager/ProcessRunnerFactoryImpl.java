@@ -9,14 +9,14 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 import com.ikaver.aagarwal.ds.hw1.shared.Definitions;
-import com.ikaver.aagarwal.ds.hw1.shared.IProcessManager;
+import com.ikaver.aagarwal.ds.hw1.shared.IProcessRunner;
 
-public class ProcessManagerFactoryImpl implements IProcessManagerFactory {
+public class ProcessRunnerFactoryImpl implements IProcessRunnerFactory {
   
   private static final Logger logger 
-    = LogManager.getLogger(ProcessManagerFactoryImpl.class.getName());
+    = LogManager.getLogger(ProcessRunnerFactoryImpl.class.getName());
   
-  public IProcessManager processManagerFromConnectionString(String connectionStr) {
+  public IProcessRunner processRunnerFromConnectionStr(String connectionStr) {
     if(connectionStr == null) return null;
     String url = String.format(
         "//%s/%s", 
@@ -24,7 +24,7 @@ public class ProcessManagerFactoryImpl implements IProcessManagerFactory {
         Definitions.PROCESS_MANAGER_SERVICE
     );
     try {
-      return (IProcessManager) Naming.lookup (url);
+      return (IProcessRunner) Naming.lookup (url);
     } catch (MalformedURLException e) {
       logger.info("Bad URL", e);
     } catch (RemoteException e) {

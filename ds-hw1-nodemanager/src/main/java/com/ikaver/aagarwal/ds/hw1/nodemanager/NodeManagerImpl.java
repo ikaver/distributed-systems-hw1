@@ -3,7 +3,6 @@ package com.ikaver.aagarwal.ds.hw1.nodemanager;
 import java.rmi.RemoteException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 
 import org.apache.log4j.LogManager;
@@ -13,26 +12,26 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.ikaver.aagarwal.ds.hw1.shared.IMigratableProcess;
 import com.ikaver.aagarwal.ds.hw1.shared.INodeManager;
-import com.ikaver.aagarwal.ds.hw1.shared.IProcessManager;
-import com.ikaver.aagarwal.ds.hw1.shared.NodeState;
+import com.ikaver.aagarwal.ds.hw1.shared.IProcessRunner;
+import com.ikaver.aagarwal.ds.hw1.shared.ProcessRunnerState;
 import com.ikaver.aagarwal.ds.hw1.shared.helpers.MathHelper;
 
 public class NodeManagerImpl implements INodeManager {
 
-  private IProcessManagerFactory processManagerFactory;
+  private IProcessRunnerFactory processRunnerFactory;
   private ReadWriteLock stateLock;
-  private SubscribedNodesState state;
+  private SubscribedProcessRunnersState state;
   private int currentPID;
-  
+
   private static final int AMOUNT_OF_RETRIES = 5;
 
   private static final Logger logger 
-    = LogManager.getLogger(NodeManagerImpl.class.getName());
-  
+  = LogManager.getLogger(NodeManagerImpl.class.getName());
+
   @Inject
   public NodeManagerImpl(
-      @Named("ProcessManagerFactory") IProcessManagerFactory factory,
-      @Named("NMState") SubscribedNodesState state, 
+      @Named("ProcessManagerFactory") IProcessRunnerFactory factory,
+      @Named("NMState") SubscribedProcessRunnersState state, 
       @Named("NMStateLock") ReadWriteLock stateLock) {
     if(state == null) {
       throw new NullPointerException("Processes State can't be null");
@@ -46,14 +45,14 @@ public class NodeManagerImpl implements INodeManager {
     this.currentPID = 0;
     this.state = state;
     this.stateLock = stateLock;
-    this.processManagerFactory = factory;
+    this.processRunnerFactory = factory;
   }
-  
-  public String addNode(String connectionString) {
+
+  public String addProcessRunner(String connectionString) {
     this.stateLock.writeLock().lock();
     String id = null;
     try {
-      id = this.state.addNode(connectionString);
+      id = this.state.addProcessRunner(connectionString);
     }
     finally {
       this.stateLock.writeLock().unlock();
@@ -64,58 +63,58 @@ public class NodeManagerImpl implements INodeManager {
 
   public int launch(String className, String[] args) {
     int pid = -1;
-    String nodeId = this.chooseNodeFromPool();
-    if(nodeId == null) return pid;
-    
+    String processRunnerId = this.chooseProcessRunnerFromPool();
+    if(processRunnerId == null) return pid;
+
     int possiblePID = this.getNextPID();
-    String connectionStr = this.connectionStringForNode(nodeId);
-    IProcessManager processManager 
-      = this.processManagerFactory.processManagerFromConnectionString(connectionStr);
+    String connectionStr = this.connectionStrForProcessRunner(processRunnerId);
+    IProcessRunner processManager 
+    = this.processRunnerFactory.processRunnerFromConnectionStr(connectionStr);
     ProcessLauncher launcher = new ProcessLauncher(AMOUNT_OF_RETRIES);    
     if(launcher.launch(processManager, possiblePID, className, args)) {
       pid = possiblePID;
-      this.addProcess(pid, nodeId);
+      this.addProcess(pid, processRunnerId);
     }
     return pid;
   }
-  
-  public boolean migrate(int pid, String sourceNode, String destinationNode) {
-    String srcConnection = this.connectionStringForNode(sourceNode);
-    String destConnection = this.connectionStringForNode(destinationNode);
+
+  public boolean migrate(int pid, String srcProcessRunner, String destProcessRunner) {
+    String srcConnection = this.connectionStrForProcessRunner(srcProcessRunner);
+    String destConnection = this.connectionStrForProcessRunner(destProcessRunner);
     if(srcConnection == null || destConnection == null) return false;
     boolean success = false;
     IMigratableProcess packedProcess = null;
-    IProcessManager srcManager
-    = this.processManagerFactory.processManagerFromConnectionString(srcConnection);
-    IProcessManager destManager
-    = this.processManagerFactory.processManagerFromConnectionString(destConnection);
+    IProcessRunner srcRunner
+    = this.processRunnerFactory.processRunnerFromConnectionStr(srcConnection);
+    IProcessRunner destRunner
+    = this.processRunnerFactory.processRunnerFromConnectionStr(destConnection);
     try {
-      if(srcManager != null) packedProcess = srcManager.pack(pid);
+      if(srcRunner != null) packedProcess = srcRunner.pack(pid);
     }
     catch(RemoteException e) {
       logger.error("Bad src migration", e);
     }
     try {
-      if(destManager != null && packedProcess != null) {
-        success = destManager.unpack(pid, packedProcess);
+      if(destRunner != null && packedProcess != null) {
+        success = destRunner.unpack(pid, packedProcess);
       }
     }
     catch(RemoteException e) {
       logger.error("Bad unpack", e);
     }
     if(success) {
-      this.moveProcess(pid, sourceNode, destinationNode);
+      this.moveProcess(pid, srcProcessRunner, destProcessRunner);
     }
     return success;
   }
 
   public boolean remove(int pid) {
-    String nodeId = this.nodeForPID(pid);
-    if(nodeId == null) return false;
-    
-    String connectionStr = this.connectionStringForNode(nodeId);
-    IProcessManager processManager 
-      = this.processManagerFactory.processManagerFromConnectionString(connectionStr);
+    String processRunnerId = this.processRunnerForPid(pid);
+    if(processRunnerId == null) return false;
+
+    String connectionStr = this.connectionStrForProcessRunner(processRunnerId);
+    IProcessRunner processManager 
+    = this.processRunnerFactory.processRunnerFromConnectionStr(connectionStr);
     boolean success = false;
     try {
       if(processManager != null) success = processManager.remove(pid);
@@ -129,107 +128,101 @@ public class NodeManagerImpl implements INodeManager {
     return success;
   }
 
-  public List<NodeState> getNodeInformation() {
+  public List<ProcessRunnerState> getProcessRunnerState() {
     this.stateLock.readLock().lock();
-    List<NodeState> nodes = new LinkedList<NodeState>();
+    List<ProcessRunnerState> processRunners = new LinkedList<ProcessRunnerState>();
     try{
-      Set<String> availableNodes = this.state.availableNodes();
-      if(availableNodes.size() > 0) {
-        for(String node : this.state.availableNodes()) {
-          nodes.add(new NodeState(node, this.state.getProcessList(node)));
-        }
-      }
-      else {
-        System.out.println("Currently no nodes running...");
+      for(String processRunnerId : this.state.availableProcessRunners()) {
+        processRunners.add(new ProcessRunnerState(processRunnerId, 
+            this.state.getProcessList(processRunnerId)));
       }
     }
     finally {
       this.stateLock.readLock().unlock();
     }
-    return nodes;
+    return processRunners;
   }
-  
-  private String connectionStringForNode(String node) {
+
+  private String connectionStrForProcessRunner(String processRunnerId) {
     String connectionStr = null;
     this.stateLock.readLock().lock();
     try {
-      connectionStr = this.state.connectionStringForNode(node); 
+      connectionStr = this.state.connectionStringForProcessRunner(processRunnerId); 
     }
     finally {
       this.stateLock.readLock().unlock();
     }
     return connectionStr;
   }
-  
-  private void addProcess(int pid, String node) {
+
+  private void addProcess(int pid, String processRunnerId) {
     this.stateLock.writeLock().lock();
     try {
-      this.state.addProcessToNode(pid, node);
+      this.state.addProcessToProcessRunner(pid, processRunnerId);
     }
     finally {
       this.stateLock.writeLock().unlock();
     }
   }
-  
+
   private void removeProcess(int pid) {
     this.stateLock.writeLock().lock();
     try {
-      this.state.removeProcessFromCurrentNode(pid);
+      this.state.removeProcessFromCurrentProcessRunner(pid);
     }
     finally {
       this.stateLock.writeLock().unlock();
     }
   }
-  
-  private void moveProcess(int pid, String srcNode, String destNode) {
+
+  private void moveProcess(int pid, String srcProcessRunner, String destinationProcessRunner) {
     this.stateLock.writeLock().lock();
     try {
-      this.state.removeProcessFromCurrentNode(pid);
-      this.state.addProcessToNode(pid, srcNode);
+      this.state.removeProcessFromCurrentProcessRunner(pid);
+      this.state.addProcessToProcessRunner(pid, destinationProcessRunner);
     }
     finally {
       this.stateLock.writeLock().unlock();
     }
   }
-  
-  private String nodeForPID(int pid) {
-    String nodeId = null;
+
+  private String processRunnerForPid(int pid) {
+    String processRunner = null;
     this.stateLock.readLock().lock();
     try{
-      nodeId = this.state.getNodeForPID(pid);
+      processRunner = this.state.getProcessRunnerForPid(pid);
     }
     finally {
       this.stateLock.readLock().unlock();
     }
-    return nodeId;
+    return processRunner;
   }
 
   private int getNextPID() {
-    //TODO: write LOCK
     return ++this.currentPID;
   }
 
   /*
-   * Chooses a node from the connection pool. Currently, the nodes are chosen
-   * randomly.
+   * Chooses a process runner from the connection pool. 
+   * Currently, the process runners are chosen randomly.
    */
-  private String chooseNodeFromPool() {
-    String selectedNode = null;
+  private String chooseProcessRunnerFromPool() {
+    String selectedProcessRunner = null;
     this.stateLock.readLock().lock();
     try {
-      String [] nodes = new String[this.state.nodeCount()];
-      if(nodes.length > 0) {
-        this.state.availableNodes().toArray(nodes);
-        int randomIndex = MathHelper.randomIntInRange(0, this.state.nodeCount());
-        selectedNode = nodes[randomIndex];
+      String [] processRunnersIds = new String[this.state.processRunnerCount()];
+      if(processRunnersIds.length > 0) {
+        this.state.availableProcessRunners().toArray(processRunnersIds);
+        int randomIndex = MathHelper.randomIntInRange(0, this.state.processRunnerCount());
+        selectedProcessRunner = processRunnersIds[randomIndex];
       }
       else {
-        logger.warn("Couldn't find an available node");
+        logger.warn("Couldn't find an available process runner");
       }
     }
     finally {
       this.stateLock.readLock().unlock();
     }
-    return selectedNode;
+    return selectedProcessRunner;
   }
 }

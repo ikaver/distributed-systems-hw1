@@ -1,4 +1,4 @@
-package com.ikaver.aagarwal.ds.hw1.processmanager;
+package com.ikaver.aagarwal.ds.hw1.processrunner;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -14,27 +14,27 @@ import org.apache.log4j.Logger;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.ikaver.aagarwal.ds.hw1.shared.IMigratableProcess;
-import com.ikaver.aagarwal.ds.hw1.shared.IProcessManager;
-import com.ikaver.aagarwal.ds.hw1.shared.NodeState;
+import com.ikaver.aagarwal.ds.hw1.shared.IProcessRunner;
+import com.ikaver.aagarwal.ds.hw1.shared.ProcessRunnerState;
 import com.ikaver.aagarwal.ds.hw1.shared.ProcessNotificationStateHandler;
 import com.ikaver.aagarwal.ds.hw1.shared.ProcessState;
-import com.ikaver.aagarwal.ds.hw1.processmanager.ProcessThread;;
+import com.ikaver.aagarwal.ds.hw1.processrunner.ProcessThread;
 
 @Singleton
-public class ProcessManagerImpl extends UnicastRemoteObject 
-    implements IProcessManager, ProcessNotificationStateHandler {
+public class ProcessRunnerImpl extends UnicastRemoteObject 
+    implements IProcessRunner, ProcessNotificationStateHandler {
 
   private static final long serialVersionUID = -8398758641188170913L;
 
 	private final ConcurrentHashMap<Integer, Thread> pidThreadMap = new ConcurrentHashMap<Integer, Thread>();
 	private final ConcurrentHashMap<Integer, IMigratableProcess> pidProcessMap = new ConcurrentHashMap<Integer, IMigratableProcess>();
 
-	private final Logger logger = Logger.getLogger(ProcessManagerImpl.class);
+	private final Logger logger = Logger.getLogger(ProcessRunnerImpl.class);
 	
 	private final String PROCESS_MANAGER_ID = UUID.randomUUID().toString();
 
 	@Inject
-	public ProcessManagerImpl() throws RemoteException {
+	public ProcessRunnerImpl() throws RemoteException {
 		// Empty constructor for now.. Will add more stuff if needed.
 	}
 
@@ -45,12 +45,12 @@ public class ProcessManagerImpl extends UnicastRemoteObject
 	public void run() {
 	}
 
-	public NodeState getState() {
+	public ProcessRunnerState getState() {
 		List<Integer> pids = new ArrayList<Integer>(pidProcessMap.keySet());
 		// We are passing a random node id to the server id. The server may have a 
 		// different naming convention for this slave node and hence 
 		// can(will) choose to ignore it (as in the current implementation).
-		NodeState state = new NodeState(PROCESS_MANAGER_ID, pids);
+		ProcessRunnerState state = new ProcessRunnerState(PROCESS_MANAGER_ID, pids);
 		return state;
 	}
 

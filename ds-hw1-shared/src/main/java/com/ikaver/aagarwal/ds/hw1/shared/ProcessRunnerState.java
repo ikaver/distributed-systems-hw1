@@ -4,15 +4,14 @@ import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 
-// TODO(ikaver, ankit): Extract it to an interface.
-public class NodeState implements Serializable {
+public class ProcessRunnerState implements Serializable {
 
   private static final long serialVersionUID = -3222854152850012659L;
-  private String nodeId;
+  private String processRunnerId;
   private List<Integer> runningProcesses;
 
-  public NodeState(String nodeId, List<Integer> runningProcesses) {
-    this.nodeId = nodeId;
+  public ProcessRunnerState(String nodeId, List<Integer> runningProcesses) {
+    this.processRunnerId = nodeId;
     if(runningProcesses == null) {
       this.runningProcesses = new LinkedList<Integer>();
     }
@@ -21,8 +20,8 @@ public class NodeState implements Serializable {
     }
   }
 
-  public String getNodeId() {
-    return nodeId;
+  public String getProcessRunnerId() {
+    return processRunnerId;
   }
 
   public List<Integer> getRunningProcesses() {

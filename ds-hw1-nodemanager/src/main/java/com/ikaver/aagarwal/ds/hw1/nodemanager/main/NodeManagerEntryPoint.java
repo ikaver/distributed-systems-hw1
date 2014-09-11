@@ -6,20 +6,19 @@ import java.util.concurrent.ScheduledExecutorService;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.ikaver.aagarwal.ds.hw1.nodemanager.NodeManagerController;
-import com.ikaver.aagarwal.ds.hw1.nodemanager.NodeManagerStateRefreshThread;
+import com.ikaver.aagarwal.ds.hw1.nodemanager.ProcessRunnerStateRefreshThread;
 import com.ikaver.aagarwal.ds.hw1.shared.Definitions;
 
 import static java.util.concurrent.TimeUnit.*;
 
-public class App {
+public class NodeManagerEntryPoint {
 
   public static void main(String[] args) {
-    // Injector injector = Guice.createInjector(new TestUserInputModule());
     Injector injector = Guice.createInjector(new NodeManagerModule());
     NodeManagerController controller = injector
         .getInstance(NodeManagerController.class);
-    NodeManagerStateRefreshThread refresh = injector
-        .getInstance(NodeManagerStateRefreshThread.class);
+    ProcessRunnerStateRefreshThread refresh = injector
+        .getInstance(ProcessRunnerStateRefreshThread.class);
 
     // TODO: may need to clean up scheduler code
     ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);

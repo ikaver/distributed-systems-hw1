@@ -4,14 +4,14 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 
-public interface IProcessManager extends Remote {
+public interface IProcessRunner extends Remote {
   /**
    * @description Returns the current state of the node, indicating which 
    * processes are currently running.
    * @return The current node state.
-   * @see NodeState
+   * @see ProcessRunnerState
    */
-  public NodeState getState() throws RemoteException;
+  public ProcessRunnerState getState() throws RemoteException;
   /**
    * Suspends the migratable process with the given pid, and afterwards returns 
    * a serialized version of the suspended process.

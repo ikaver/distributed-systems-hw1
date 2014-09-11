@@ -31,7 +31,7 @@
               <argument>-classpath</argument>
               <classpath />
               <!-- Add main class here -->
-              <argument>com.ikaver.aagarwal.ds.hw1.nodemanager.main.App</argument>
+              <argument>com.ikaver.aagarwal.ds.hw1.nodemanager.main.NodeManagerEntryPoint</argument>
               <!-- Add custom program parameters here (declared in properties) -->
               <!--<argument>${isServer}</argument> -->
             </arguments>
@@ -76,7 +76,7 @@
           <configuration>
             <archive>
               <manifest>
-                <mainClass>com.ikaver.aagarwal.ds.hw1.nodemanager.main.App</mainClass>
+                <mainClass>com.ikaver.aagarwal.ds.hw1.nodemanager.main.NodeManagerEntryPoint</mainClass>
               </manifest>
             </archive>
             <descriptorRefs>

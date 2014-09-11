@@ -5,7 +5,7 @@ import java.rmi.RemoteException;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
-import com.ikaver.aagarwal.ds.hw1.shared.IProcessManager;
+import com.ikaver.aagarwal.ds.hw1.shared.IProcessRunner;
 
 public class ProcessLauncher {
 
@@ -18,7 +18,7 @@ public class ProcessLauncher {
     this.amountOfRetries = amountOfRetries;
   }
 
-  public boolean launch(IProcessManager manager, int pid, String className, String [] args) {
+  public boolean launch(IProcessRunner manager, int pid, String className, String [] args) {
     if(manager == null) return false;
     
     boolean launched = false;
