@@ -64,7 +64,7 @@ public class NodeManagerController {
       this.migrateCommand(tokens);
     }
     else if(commandId.equals(TERMINATE_COMMAND)) {
-      this.killCommand(tokens);
+      this.terminateCommand(tokens);
     }
     else if(commandId.equals(LAUNCH_COMMAND)) {
       this.launchCommand(tokens);
@@ -145,7 +145,7 @@ public class NodeManagerController {
    * @param args Arguments for the kill command. 
    *    ["k", PROCESS_ID]
    */
-  private void killCommand(String [] args) {
+  private void terminateCommand(String [] args) {
     if(args.length < 2 || ArrayAdditions.contains(args, null)) {
       this.printHelp();
       return;
