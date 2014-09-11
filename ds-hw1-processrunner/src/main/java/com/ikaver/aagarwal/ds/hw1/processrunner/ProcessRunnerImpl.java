@@ -70,7 +70,7 @@ public class ProcessRunnerImpl extends UnicastRemoteObject
 		// We are passing a random node id to the server id. The server may have a 
 		// different naming convention for this slave node and hence 
 		// can(will) choose to ignore it (as in the current implementation).
-		ProcessRunnerState state = new ProcessRunnerState(PROCESS_MANAGER_ID, pids);
+		ProcessRunnerState state = new ProcessRunnerState(PROCESS_MANAGER_ID, "", pids);
 		return state;
 	}
   /**

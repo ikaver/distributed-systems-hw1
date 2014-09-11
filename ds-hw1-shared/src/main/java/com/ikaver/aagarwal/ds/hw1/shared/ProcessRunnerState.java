@@ -15,12 +15,17 @@ public class ProcessRunnerState implements Serializable {
    */
   private String processRunnerId;
   /**
+   * The connection string for the process runner
+   */
+  private String connectionStr;
+  /**
    * A list of pids of the processes currently running.
    */
   private List<Integer> runningProcesses;
 
-  public ProcessRunnerState(String nodeId, List<Integer> runningProcesses) {
+  public ProcessRunnerState(String nodeId, String connectionStr, List<Integer> runningProcesses) {
     this.processRunnerId = nodeId;
+    this.connectionStr = connectionStr;
     if(runningProcesses == null) {
       this.runningProcesses = new LinkedList<Integer>();
     }
@@ -31,6 +36,10 @@ public class ProcessRunnerState implements Serializable {
 
   public String getProcessRunnerId() {
     return processRunnerId;
+  }
+  
+  public String getConnectionStr() {
+    return connectionStr;
   }
 
   public List<Integer> getRunningProcesses() {

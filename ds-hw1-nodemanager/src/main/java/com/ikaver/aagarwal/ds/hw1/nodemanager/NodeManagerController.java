@@ -214,7 +214,8 @@ public class NodeManagerController {
       List<ProcessRunnerState> state = this.manager.getProcessRunnerState();
       if(state.size() > 0) {
         for(ProcessRunnerState runner : state) {
-          System.out.printf("Process runner %s : %s\n", runner.getProcessRunnerId(),
+          System.out.printf("Process runner %s (%s) : %s\n", runner.getProcessRunnerId(),
+              runner.getConnectionStr(),
               runner.getRunningProcesses());
         }
       }

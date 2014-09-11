@@ -205,6 +205,7 @@ public class NodeManagerImpl implements INodeManager {
     try{
       for(String processRunnerId : this.state.availableProcessRunners()) {
         processRunners.add(new ProcessRunnerState(processRunnerId, 
+            this.state.connectionStringForProcessRunner(processRunnerId),
             this.state.getProcessList(processRunnerId)));
       }
     }
