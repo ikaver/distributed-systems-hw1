@@ -9,11 +9,13 @@ import com.ikaver.aagarwal.ds.hw1.shared.IMigratableProcess;
 import com.ikaver.aagarwal.ds.hw1.shared.transactionalio.TransactionalFileInputStream;
 import com.ikaver.aagarwal.ds.hw1.shared.transactionalio.TransactionalFileOutputStream;
 
+/**
+ * Class given as an example migratable process in
+ * http://www.andrew.cmu.edu/course/15-440-f14/applications/labs/lab1/GrepProcess.java
+ */
 public class GrepProcess implements IMigratableProcess
 {
-  /**
-   * 
-   */
+
   private static final long serialVersionUID = -3893956830773780468L;
   private TransactionalFileInputStream  inFile;
   private TransactionalFileOutputStream outFile;

@@ -6,6 +6,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
 
+/**
+ * Class that allows migratable processes to write files. It will maintain all 
+ * the information required in order to continue performing operations on the file, 
+ * even if the process is transferred to another node.
+ */
 public class TransactionalFileOutputStream extends OutputStream implements Serializable{
 
   private static final long serialVersionUID = 6197467219240327863L;

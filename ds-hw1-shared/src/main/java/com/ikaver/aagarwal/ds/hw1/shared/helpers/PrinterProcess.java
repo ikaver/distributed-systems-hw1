@@ -3,8 +3,8 @@ package com.ikaver.aagarwal.ds.hw1.shared.helpers;
 import com.ikaver.aagarwal.ds.hw1.shared.IMigratableProcess;
 
 /**
- * A mock grep process which doesn't do a whole lot of fancy stuff.
- * Useful for testing and some debugging.
+ * A mock test process that prints the numbers from 100000 to 1.
+ * Useful for testing and debugging.
  */
 public class PrinterProcess implements IMigratableProcess {
 

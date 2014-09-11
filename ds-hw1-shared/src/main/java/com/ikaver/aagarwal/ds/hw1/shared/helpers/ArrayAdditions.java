@@ -1,5 +1,8 @@
 package com.ikaver.aagarwal.ds.hw1.shared.helpers;
 
+/**
+ * Helper functions for array operations.
+ */
 public class ArrayAdditions {
   
   public static boolean contains(Object [] array, Object elem) {

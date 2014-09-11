@@ -6,6 +6,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 
+/**
+ * Class that allows migratable processes to read files. It will maintain all 
+ * the information required in order to continue performing operations on the file, 
+ * even if the process is transferred to another node.
+ */
 public class TransactionalFileInputStream extends InputStream implements
     Serializable {
 
