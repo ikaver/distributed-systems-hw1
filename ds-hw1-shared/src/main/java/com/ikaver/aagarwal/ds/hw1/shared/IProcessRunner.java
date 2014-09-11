@@ -3,7 +3,11 @@ package com.ikaver.aagarwal.ds.hw1.shared;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-
+/**
+ * Describes a process runner, an entity capable of launching, packing, 
+ * unpacking and terminating processes, as well as reporting the state
+ * of the processes that its running periodically.
+ */
 public interface IProcessRunner extends Remote {
   
   /**
