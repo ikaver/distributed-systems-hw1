@@ -11,6 +11,11 @@ import org.apache.log4j.Logger;
 import com.ikaver.aagarwal.ds.hw1.shared.Definitions;
 import com.ikaver.aagarwal.ds.hw1.shared.IProcessRunner;
 
+/**
+ * An implementation of the IProcessRunnerFactory interface.
+ * Uses RMI to get an instance of the process runner with the given
+ * connection string.
+ */
 public class ProcessRunnerFactoryImpl implements IProcessRunnerFactory {
   
   private static final Logger logger 

@@ -11,6 +11,10 @@ import com.ikaver.aagarwal.ds.hw1.shared.Definitions;
 
 import static java.util.concurrent.TimeUnit.*;
 
+/**
+ * Entry point of the Node Manager program. Initiates the threads and 
+ * gives control to the NodeManagerController.
+ */
 public class NodeManagerEntryPoint {
 
   public static void main(String[] args) {

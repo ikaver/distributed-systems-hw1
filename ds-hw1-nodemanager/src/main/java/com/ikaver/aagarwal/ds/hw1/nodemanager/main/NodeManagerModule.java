@@ -12,6 +12,9 @@ import com.ikaver.aagarwal.ds.hw1.nodemanager.ProcessRunnerFactoryImpl;
 import com.ikaver.aagarwal.ds.hw1.nodemanager.SubscribedProcessRunnersState;
 import com.ikaver.aagarwal.ds.hw1.shared.INodeManager;
 
+/**
+ * Guice module describing how the node manager instances should be constructed.
+ */
 public class NodeManagerModule extends AbstractModule {
   @Override
   protected void configure() {

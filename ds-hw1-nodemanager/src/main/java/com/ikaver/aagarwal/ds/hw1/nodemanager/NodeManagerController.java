@@ -80,6 +80,10 @@ public class NodeManagerController {
     }
   }
   
+  /**
+   * Adds a new process runner to the set of available process runner.
+   * @param args args[1] should be the socket address of the new node.
+   */
   private void addProcessRunnerCommand(String [] args) {
     if(args.length < 2 || ArrayAdditions.contains(args, null)) {
       this.printHelp();
@@ -224,6 +228,9 @@ public class NodeManagerController {
     }
   }
   
+  /**
+   * Prints help for the user
+   */
   private void printHelp() {
     System.out.println("Invalid command. Use: ");
     System.out.printf("\t%s PROCESS_ID\n", TERMINATE_COMMAND);

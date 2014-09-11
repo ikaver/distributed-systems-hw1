@@ -7,6 +7,10 @@ import org.apache.log4j.Logger;
 
 import com.ikaver.aagarwal.ds.hw1.shared.IProcessRunner;
 
+/**
+ * A simple class that tries to launch a process in a process runner 
+ * (amountOfRetries) times before reporting failure.
+ */
 public class ProcessLauncher {
 
   private int amountOfRetries;
