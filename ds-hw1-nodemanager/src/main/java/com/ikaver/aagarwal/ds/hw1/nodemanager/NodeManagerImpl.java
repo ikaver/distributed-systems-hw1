@@ -76,6 +76,22 @@ public class NodeManagerImpl implements INodeManager {
   }
 
 
+  public double sum(double... values) {
+    double sum = 0.0;
+    for(double value : values) {
+      sum += value;
+    }
+    return sum;
+  }
+  
+  public double sumArray(double [] values) {
+    double sum = 0.0;
+    for(double value : values) {
+      sum += value;
+    }
+    return sum;
+  }
+  
   public int launch(String className, String[] args) {
     int pid = -1;
     String processRunnerId = this.chooseProcessRunnerFromPool();
